@@ -6,31 +6,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Innersloth\MessagesOld\Message00HostGame.cs" />
-      <Compile Remove="Innersloth\MessagesOld\Message01JoinGame.cs" />
-      <Compile Remove="Innersloth\MessagesOld\Message04RemovePlayer.cs" />
-      <Compile Remove="Innersloth\MessagesOld\Message07JoinedGame.cs" />
-      <Compile Remove="Innersloth\MessagesOld\Message10AlterGame.cs" />
-      <Compile Remove="Innersloth\MessagesOld\Message11KickPlayer.cs" />
-      <Compile Remove="Innersloth\MessagesOld\Message12WaitForHost.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="System.Memory" Version="4.5.4" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="Innersloth\MessagesOld\Message00HostGame.cs" />
-      <None Include="Innersloth\MessagesOld\Message01JoinGame.cs" />
-      <None Include="Innersloth\MessagesOld\Message04RemovePlayer.cs" />
-      <None Include="Innersloth\MessagesOld\Message07JoinedGame.cs" />
-      <None Include="Innersloth\MessagesOld\Message10AlterGame.cs" />
-      <None Include="Innersloth\MessagesOld\Message11KickPlayer.cs" />
-      <None Include="Innersloth\MessagesOld\Message12WaitForHost.cs" />
+      <ProjectReference Include="..\..\submodules\Hazel-Networking\Hazel\Hazel.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\submodules\Hazel-Networking\Hazel\Hazel.csproj" />
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>..\UnityBinaries\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.SharedInternalsModule">
+        <HintPath>..\UnityBinaries\UnityEngine.SharedInternalsModule.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

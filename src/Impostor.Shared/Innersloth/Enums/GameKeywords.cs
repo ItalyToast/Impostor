@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Impostor.Shared.Innersloth.Data
+namespace Impostor.Shared.Innersloth.Enums
 {
     [Flags]
     public enum GameKeywords : uint

@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Impostor.Shared.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace Impostor.Shared
 {
@@ -52,6 +54,13 @@ namespace Impostor.Shared
             type = binRdr.ReadByte();
             var data = binRdr.ReadBytes(size);
             return new HazelBinaryReader(data);
+        }
+
+        public static Vector2 ReadLerpVector2(this HazelBinaryReader binRdr, FloatRange xrange, FloatRange yrange)
+        {
+            float v = (float)binRdr.ReadUInt16() / 65535f;
+            float v2 = (float)binRdr.ReadUInt16() / 65535f;
+            return new Vector2(xrange.Lerp(v), yrange.Lerp(v2));
         }
     }
 }

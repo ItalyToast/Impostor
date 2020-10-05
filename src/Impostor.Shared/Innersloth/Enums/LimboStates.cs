@@ -1,4 +1,4 @@
-﻿namespace Impostor.Shared.Innersloth.Data
+﻿namespace Impostor.Shared.Innersloth.Enums
 {
     public enum LimboStates
     {

@@ -1,19 +1,21 @@
-﻿using System;
+﻿using Impostor.Shared.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Impostor.Shared.Innersloth.GameData
 {
     public class Move
     {
+        static FloatRange xyrange = new FloatRange(-40, 40);
+
         public int ownerId;
         public int seq;
-        public int x;
-        public int y;
-        public int dx;
-        public int dy;
+        public Vector2 position;
+        public Vector2 velocity;
 
         public static Move Deserialize(HazelBinaryReader reader)
         {
@@ -21,13 +23,8 @@ namespace Impostor.Shared.Innersloth.GameData
 
             msg.ownerId = reader.ReadPackedInt32();
             msg.seq = reader.ReadInt16();
-            msg.x = reader.ReadInt16();
-            msg.y = reader.ReadInt16();
-            msg.dx = reader.ReadInt16();
-            msg.dy = reader.ReadInt16();
-
-            //msg.x = msg.x ^ 0x7FFF;
-            //msg.y = msg.y ^ 0x7FFF;
+            msg.position = reader.ReadLerpVector2(xyrange, xyrange);
+            msg.velocity = reader.ReadLerpVector2(xyrange, xyrange);
 
             return msg;
         }

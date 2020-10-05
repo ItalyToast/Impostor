@@ -10,7 +10,6 @@ using Impostor.Server.Net.Messages;
 using Impostor.Shared;
 using Impostor.Shared.Innersloth.Enums;
 using Impostor.Shared.Innersloth.GameData;
-using Impostor.Shared.Innersloth.GameData.RPCCommands;
 using Impostor.Shared.Innersloth.Messages;
 using Impostor.Shared.Innersloth.RpcCommands;
 using Newtonsoft.Json;
