@@ -6,7 +6,15 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.GameData
 {
-    class Ready
+    public class Ready
     {
+        public int playerId;
+
+        public static Ready Deserialize(HazelBinaryReader reader)
+        {
+            var msg = new Ready();
+            msg.playerId = reader.ReadPackedInt32();
+            return msg;
+        }
     }
 }

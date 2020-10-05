@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.RpcCommands
 {
-    public class SetSkin
+    public class RpcSetPet
     {
-        public Skin skinId;
-        public static SetSkin Deserialize(HazelBinaryReader reader)
+        public int petId;
+        public static RpcSetPet Deserialize(HazelBinaryReader reader)
         {
-            var msg = new SetSkin();
-            msg.skinId = (Skin)reader.ReadByte();
+            var msg = new RpcSetPet();
+            msg.petId = reader.ReadPackedInt32();
             return msg;
         }
     }

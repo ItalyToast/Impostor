@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using Impostor.Shared.Innersloth.Data;
+using Impostor.Shared.Innersloth.Enums;
 
 namespace Impostor.Shared.Innersloth
 {

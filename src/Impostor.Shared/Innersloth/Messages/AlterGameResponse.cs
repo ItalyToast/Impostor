@@ -1,4 +1,4 @@
-﻿using Impostor.Shared.Innersloth.Data;
+﻿using Impostor.Shared.Innersloth.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;

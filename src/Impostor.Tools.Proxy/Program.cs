@@ -26,6 +26,7 @@ namespace Impostor.Tools.Proxy
 
         public static bool LogNotConsumed = false;
         public static bool LogMoves = false;
+        public static bool LogRPC = false;
 
 
         public static Dictionary<int, PlayerState> players = new Dictionary<int, PlayerState>();
@@ -301,7 +302,7 @@ namespace Impostor.Tools.Proxy
                     var move = Move.Deserialize(reader);
                     if (LogMoves)
                     {
-                        Console.WriteLine($"[{dir}]Move command player: {move.ownerId:0000} seq: {move.seq:0000} x: {move.x:00000} y: {move.y:00000}");
+                        Console.WriteLine($"[{dir}]Move command player: {move.ownerId:0000} seq: {move.seq:0000} pos: {move.position} delta: {move.velocity}");
                     }
 
                     //if (reader.HasBytesLeft()) throw new Exception();
@@ -309,30 +310,116 @@ namespace Impostor.Tools.Proxy
 
                 case GameDataType.RpcCall:
                     var RPC = RpcCall.Deserialize(reader);
-                    DumpToConsole(RPC);
+                    DumpToConsole(RPC, LogRPC);
                     //Console.WriteLine($"RPC for type: {RPC} size: {data.body.Length}");
                     switch (RPC.callId)
                     {
+                        case RpcCalls.CheckColor:
+                            var CheckColor = CmdCheckColor.Deserialize(reader);
+                            DumpToConsole(CheckColor, LogRPC);
+                            break;
+                        case RpcCalls.CheckName:
+                            var CheckName = CmdCheckName.Deserialize(reader);
+                            DumpToConsole(CheckName, LogRPC);
+                            break;
+
+                        case RpcCalls.EnterVent:
+                            var EnterVent = RpcEnterVent.Deserialize(reader);
+                            DumpToConsole(EnterVent, LogRPC);
+                            break;
+                        case RpcCalls.ExitVent:
+                            var ExitVent = RpcExitVent.Deserialize(reader);
+                            DumpToConsole(ExitVent, LogRPC);
+                            break;
                         case RpcCalls.Exiled:
                             var exileid = reader.ReadPackedInt32();
                             Console.WriteLine("Exile id: " + exileid);
                             break;
                         case RpcCalls.SendChat:
-                            var chat = SendChat.Deserialize(reader);
+                            var chat = RpcSendChat.Deserialize(reader);
                             Console.WriteLine($"[CHAT]{RPC.targetNetId}: {chat.text}");
                             break;
                         case RpcCalls.SendChatNote:
-                            var chatnote = SendChatNote.Deserialize(reader);
-                            break;
-                        case RpcCalls.SetSkin:
-                            var skin = SetSkin.Deserialize(reader);
-                            DumpToConsole(skin);
-                            break;
-                        case RpcCalls.SetHat:
-                            var hat = SetHat.Deserialize(reader);
-                            Console.WriteLine($"Set hat: [{(int)hat.hatId}]{hat.hatId}");
+                            var chatnote = RpcSendChatNote.Deserialize(reader);
                             break;
 
+                        case RpcCalls.SetColor:
+                            var SetColor = RpcSetColor.Deserialize(reader);
+                            DumpToConsole(SetColor, LogRPC);
+                            break;
+                        case RpcCalls.SetSkin:
+                            var skin = RpcSetSkin.Deserialize(reader);
+                            DumpToConsole(skin, LogRPC);
+                            break;
+                        case RpcCalls.SetHat:
+                            var hat = RpcSetHat.Deserialize(reader);
+                            Console.WriteLine($"Set hat: [{(int)hat.hatId}]{hat.hatId}");
+                            break;
+                        case RpcCalls.SetPet:
+                            var setpet = RpcSetPet.Deserialize(reader);
+                            DumpToConsole(setpet, LogRPC);
+                            break;
+                        case RpcCalls.SetName:
+                            var setname = RpcSetName.Deserialize(reader);
+                            DumpToConsole(setname, LogRPC);
+                            break;
+                        case RpcCalls.SetTasks:
+                            var SetTasks = RpcSetTasks.Deserialize(reader);
+                            DumpToConsole(SetTasks, LogRPC);
+                            break;
+                        case RpcCalls.SetScanner:
+                            var SetScanner = RpcSetScanner.Deserialize(reader);
+                            DumpToConsole(SetScanner, LogRPC);
+                            break;
+
+                        case RpcCalls.AddVote:
+                            var addvote = CmdCastVote.Deserialize(reader);
+                            DumpToConsole(addvote, LogRPC);
+                            break;
+                        case RpcCalls.PlayAnimation:
+                            var anim = RpcPlayAnimation.Deserialize(reader);
+                            DumpToConsole(anim, LogRPC);
+                            break;
+                        case RpcCalls.CastVote:
+                            var castvote = CmdCastVote.Deserialize(reader);
+                            DumpToConsole(castvote, LogRPC);
+                            break;
+                        case RpcCalls.CompleteTask:
+                            var complete = RpcCompleteTask.Deserialize(reader);
+                            DumpToConsole(complete, LogRPC);
+                            break;
+                       
+                        case RpcCalls.MurderPlayer:
+                            var MurderPlayer = RpcMurderPlayer.Deserialize(reader);
+                            DumpToConsole(MurderPlayer, LogRPC);
+                            break;
+                        case RpcCalls.RepairSystem:
+                            var RepairSystem = RpcRepairSystem.Deserialize(reader);
+                            DumpToConsole(RepairSystem, LogRPC);
+                            break;
+                        case RpcCalls.ReportDeadBody:
+                            var ReportDeadBody = CmdReportDeadBody.Deserialize(reader);
+                            DumpToConsole(ReportDeadBody, LogRPC);
+                            break;
+
+                        case RpcCalls.SnapTo:
+                            var SnapTo = RpcSnapTo.Deserialize(reader);
+                            DumpToConsole(SnapTo, LogRPC);
+                            break;
+                        case RpcCalls.StartMeeting:
+                            var StartMeeting = RpcStartMeeting.Deserialize(reader);
+                            DumpToConsole(StartMeeting, LogRPC);
+                            break;
+                        case RpcCalls.VotingComplete:
+                            var VotingComplete = RpcVotingComplete.Deserialize(reader);
+                            DumpToConsole(VotingComplete, LogRPC);
+                            break;
+                            //Dont have a message body
+                        case RpcCalls.Close:
+                        //Currently not implemented
+                        case RpcCalls.UpdateGameData:
+                        case RpcCalls.SetStartCounter:
+                            break;
                         default:
                             Console.WriteLine($"Unhandled RPC command: " + RPC.callId);
                             break;
@@ -351,6 +438,8 @@ namespace Impostor.Tools.Proxy
                     //File.WriteAllBytes(Path.Combine("spawn", $"gamedata_spawn_{spawn_id++}.bin"), data.body);
                     break;
                 case GameDataType.SceneChange:
+                    var scene = SceneChange.Deserialize(reader);
+                    DumpToConsole(scene);
                     break;
                 case GameDataType.Despawn:
                     break;
@@ -360,7 +449,7 @@ namespace Impostor.Tools.Proxy
                     break;
 
                 default:
-                    Console.WriteLine($"Unhandled Gamedatatype: {datatype.ToString()}");
+                    Console.WriteLine($"Unhandled Gamedatatype: {datatype}");
                     break;
             }
 
@@ -375,7 +464,11 @@ namespace Impostor.Tools.Proxy
             if (shouldLog)
 	        {
                 Console.WriteLine(data.GetType().Name);
-                var json = JsonConvert.SerializeObject(data, Formatting.Indented);
+                var settings = new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                };
+                var json = JsonConvert.SerializeObject(data, Formatting.Indented, settings);
                 Console.WriteLine(json);
 	        }
         }

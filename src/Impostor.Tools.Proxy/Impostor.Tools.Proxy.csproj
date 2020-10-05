@@ -15,4 +15,13 @@
       <ProjectReference Include="..\Impostor.Shared\Impostor.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>..\UnityBinaries\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.SharedInternalsModule">
+        <HintPath>..\UnityBinaries\UnityEngine.SharedInternalsModule.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

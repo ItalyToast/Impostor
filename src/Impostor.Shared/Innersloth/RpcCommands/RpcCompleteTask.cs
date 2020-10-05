@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.RpcCommands
 {
-    public class SendChat
+    public class RpcCompleteTask
     {
-        public string text;
+        public int idx;
 
-        public static SendChat Deserialize(HazelBinaryReader reader)
+        public static RpcCompleteTask Deserialize(HazelBinaryReader reader)
         {
-            var msg = new SendChat();
+            var msg = new RpcCompleteTask();
 
-            msg.text = reader.ReadString();
+            msg.idx = reader.ReadPackedInt32();
 
             return msg;
         }
