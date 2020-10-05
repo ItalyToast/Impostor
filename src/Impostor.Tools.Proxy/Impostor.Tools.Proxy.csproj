@@ -6,11 +6,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
       <PackageReference Include="Pcap.Net.x64" Version="1.0.4.1" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\submodules\Hazel-Networking\Hazel\Hazel.csproj" />
+      <ProjectReference Include="..\Impostor.Shared\Impostor.Shared.csproj" />
     </ItemGroup>
 
 </Project>

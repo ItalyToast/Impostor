@@ -1,10 +1,13 @@
 using System;
+using System.IO;
+using System.Linq;
 using Hazel;
 using Impostor.Server.Data;
 using Impostor.Server.Net.Manager;
 using Impostor.Server.Net.Messages;
 using Impostor.Server.Net.State;
 using Impostor.Shared.Innersloth.Data;
+using Impostor.Shared.Innersloth.Messages;
 using Serilog;
 using ILogger = Serilog.ILogger;
 
@@ -178,6 +181,9 @@ namespace Impostor.Server.Net
                     {
                         return;
                     }
+
+                    Directory.CreateDirectory("Dump");
+                    File.WriteAllBytes($"Dump\\GameData_{flag}_{DateTime.Now.Ticks}.bin", message.Buffer.Take(message.Length).ToArray());
 
                     // Broadcast packet to all other players.
                     using (var writer = MessageWriter.Get(sendOption))
