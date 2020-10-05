@@ -27,6 +27,7 @@ namespace Impostor.Tools.Proxy
         public static bool LogNotConsumed = false;
         public static bool LogMoves = false;
         public static bool LogRPC = false;
+        public static bool LogChat = false;
 
 
         public static Dictionary<int, PlayerState> players = new Dictionary<int, PlayerState>();
@@ -34,37 +35,37 @@ namespace Impostor.Tools.Proxy
         private static void Main(string[] args)
         {
 
-            foreach (var f in Directory.EnumerateFiles("spawn"))
-            {
-                var fi = new FileInfo(f);
-                var send = fi.Name.Contains("send");
+            //foreach (var f in Directory.EnumerateFiles("spawn"))
+            //{
+            //    var fi = new FileInfo(f);
+            //    var send = fi.Name.Contains("send");
 
-                var body = File.ReadAllBytes(f);
-                var gd = new GameData()
-                {
-                    body = body,
-                    type = (byte)GameDataType.Spawn,
-                };
-                HandleGameData(gd, send);
-            }
+            //    var body = File.ReadAllBytes(f);
+            //    var gd = new GameData()
+            //    {
+            //        body = body,
+            //        type = (byte)GameDataType.Spawn,
+            //    };
+            //    HandleGameData(gd, send);
+            //}
 
-            Regex idregex = new Regex("data_(\\d+)");
-            foreach (var f in Directory.EnumerateFiles("gamedata").OrderBy(p => int.Parse(idregex.Match(p).Groups[1].Value)))
-            {
-                var fi = new FileInfo(f);
-                var send = fi.Name.Contains("send");
+            //Regex idregex = new Regex("data_(\\d+)");
+            //foreach (var f in Directory.EnumerateFiles("gamedata").OrderBy(p => int.Parse(idregex.Match(p).Groups[1].Value)))
+            //{
+            //    var fi = new FileInfo(f);
+            //    var send = fi.Name.Contains("send");
 
-                var body = File.ReadAllBytes(f);
-                var ms = new MemoryStream(body);
-                var reader = new HazelBinaryReader(ms);
-                var gamedata = GameData.Deserialize(reader);
-                HandleGameData(gamedata, send);
+            //    var body = File.ReadAllBytes(f);
+            //    var ms = new MemoryStream(body);
+            //    var reader = new HazelBinaryReader(ms);
+            //    var gamedata = GameData.Deserialize(reader);
+            //    HandleGameData(gamedata, send);
 
-                if (reader.GetBytesLeft() > 0)
-                {
-                    //throw new Exception();
-                }
-            }
+            //    if (reader.GetBytesLeft() > 0)
+            //    {
+            //        //throw new Exception();
+            //    }
+            //}
 
 
 
@@ -337,10 +338,11 @@ namespace Impostor.Tools.Proxy
                             break;
                         case RpcCalls.SendChat:
                             var chat = RpcSendChat.Deserialize(reader);
-                            Console.WriteLine($"[CHAT]{RPC.targetNetId}: {chat.text}");
+                            LogChatToConsole(RPC.targetNetId.ToString(), chat.text);
                             break;
                         case RpcCalls.SendChatNote:
                             var chatnote = RpcSendChatNote.Deserialize(reader);
+                            LogChatToConsole("server", "SendChatNote");
                             break;
 
                         case RpcCalls.SetColor:
@@ -456,6 +458,14 @@ namespace Impostor.Tools.Proxy
             if (reader.GetBytesLeft() > 0 && LogNotConsumed)
             {
                 Console.WriteLine($"{reader.GetBytesLeft()} bytes not cunsumed");
+            }
+        }
+
+        static void LogChatToConsole(string sender, string message)
+        {
+            if (LogChat)
+            {
+                Console.WriteLine($"[CHAT][{sender}]{message}");
             }
         }
 

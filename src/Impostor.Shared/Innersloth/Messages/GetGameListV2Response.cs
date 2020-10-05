@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Hazel;
 using Impostor.Shared.Innersloth;
+using System.Linq;
 
 namespace Impostor.Shared.Innersloth.Messages
 {
@@ -9,71 +10,57 @@ namespace Impostor.Shared.Innersloth.Messages
     {
         public class GameListItem
         {
-            //public static GameInfo Deserialize(HazelBinaryReader reader)
-            //{
-            //    writer.Write(game.PublicIp.Address.GetAddressBytes());
-            //    writer.Write((ushort)game.PublicIp.Port);
-            //    writer.Write(game.Code);
-            //    writer.Write(game.Host.Client.Name);
-            //    writer.Write((byte)game.PlayerCount);
-            //    writer.WritePacked(1); // TODO: What does Age do?
-            //    writer.Write((byte)game.Options.MapId);
-            //    writer.Write((byte)game.Options.NumImpostors);
-            //    writer.Write((byte)game.Options.MaxPlayers);
-            //}
+            public int adress;
+            public ushort port;
+            public int code;
+            public string name;
+            public byte players;
+            public int age;
+            public byte mapid;
+            public byte imposters;
+            public byte maxplayers;
+
+
+            public static GameListItem Deserialize(HazelBinaryReader reader)
+            {
+                var msg = new GameListItem();
+
+                msg.adress = reader.ReadInt32();
+                msg.port = reader.ReadUInt16();
+                msg.code = reader.ReadInt32();
+                msg.name = reader.ReadString();
+                msg.players = reader.ReadByte();
+                msg.age = reader.ReadPackedInt32();
+                msg.mapid = reader.ReadByte();
+                msg.imposters = reader.ReadByte();
+                msg.maxplayers = reader.ReadByte();
+                return msg;
+            }
         }
 
-        public int skeld;
-        public int miraHQ;
-        public int polus;
-        //public List<GameInfo> games;
+        public List<GameListItem> games;
 
         public static GetGameListV2Response Deserialize(HazelBinaryReader reader)
         {
             var msg = new GetGameListV2Response();
-            //int headertype;
-            //var header = reader.ReadMessage(out headertype);
 
-            //msg.skeld = reader.ReadInt32();
-            //msg.miraHQ = reader.ReadInt32();
-            //msg.polus = reader.ReadInt32();
+            var size = reader.ReadInt16();
+            var type = reader.ReadByte();
+            var body = new HazelBinaryReader(reader.ReadBytes(size));
 
+            msg.games = new List<GameListItem>();
 
+            while (body.HasBytesLeft())
+            {
+                var itemsize = body.ReadInt16();
+                var itemtype = body.ReadByte();
+                var itemBody = body.ReadBytes(itemsize);
+                var itemreader = new HazelBinaryReader(itemBody);
 
-            //msg.games = reader.ReadList(read => GameInfo.Deserialize(read));
+                msg.games.Add(GameListItem.Deserialize(itemreader));
+            }
+
             return msg;
         }
-
-        //public static void Serialize(MessageWriter writer, IEnumerable<Game> games)
-        //{
-        //    //writer.StartMessage(MessageFlags.GetGameListV2);
-                
-        //    // Count
-        //    writer.StartMessage(1);
-        //    writer.Write(123); // The Skeld
-        //    writer.Write(456); // Mira HQ
-        //    writer.Write(789); // Polus
-        //    writer.EndMessage();
-                
-        //    // Listing
-        //    writer.StartMessage(0);
-        //    foreach (var game in games)
-        //    {
-        //        writer.StartMessage(0);
-        //        writer.Write(game.PublicIp.Address.GetAddressBytes());
-        //        writer.Write((ushort) game.PublicIp.Port);
-        //        writer.Write(game.Code);
-        //        writer.Write(game.Host.Client.Name);
-        //        writer.Write((byte) game.PlayerCount);
-        //        writer.WritePacked(1); // TODO: What does Age do?
-        //        writer.Write((byte) game.Options.MapId);
-        //        writer.Write((byte) game.Options.NumImpostors);
-        //        writer.Write((byte) game.Options.MaxPlayers);
-        //        writer.EndMessage();
-        //    }
-        //    writer.EndMessage();
-                
-        //    writer.EndMessage();
-        //}
     }
 }
