@@ -122,35 +122,15 @@ namespace Impostor.Tools.Proxy
             var ip = packet.Ethernet.IpV4;
             var ipSrc = ip.Source.ToString();
             var udp = ip.Udp;
-
+            var isSent = ipSrc.StartsWith("192.");
             // True if this is our own packet.
             using (var stream = udp.Payload.ToMemoryStream())
             {
-                var reader = MessageReader.Get(stream.ToArray());
-                if (reader.Buffer[0] == (byte)SendOption.Reliable)
-                {
-                    reader.Offset = 3;
-                    reader.Length = udp.Payload.Length - 3;
-                    reader.Position = 0;
-                }
-                else if (reader.Buffer[0] == (byte)UdpSendOption.Acknowledgement ||
-                         reader.Buffer[0] == (byte)UdpSendOption.Ping ||
-                         reader.Buffer[0] == (byte)UdpSendOption.Hello ||
-                         reader.Buffer[0] == (byte)UdpSendOption.Disconnect)
-                {
-                    return;
-                }
-                else
-                {
-                    reader.Offset = 1;
-                    reader.Length = udp.Payload.Length - 1;
-                    reader.Position = 0;
-                }
+                var messages = GetMessages(stream);
 
-                var isSent = ipSrc.StartsWith("192.");
-
-                while (true)
+                foreach (var item in messages)
                 {
+                    var reader = MessageReader.Get(item);
                     if (reader.Position >= reader.Length)
                     {
                         break;
@@ -173,6 +153,37 @@ namespace Impostor.Tools.Proxy
                     }
                 }
             }
+        }
+
+        private static List<byte[]> GetMessages(MemoryStream stream)
+        {
+            var buffers = new List<byte[]>();
+
+            HazelBinaryReader reader = new HazelBinaryReader(stream);
+
+
+            while (reader.HasBytesLeft())
+            {
+                var header = reader.ReadByte();
+                if ( header == (byte)UdpSendOption.Acknowledgement ||
+                     header == (byte)UdpSendOption.Ping ||
+                     header == (byte)UdpSendOption.Hello ||
+                     header == (byte)UdpSendOption.Disconnect)
+                {
+                    break;
+                }
+
+                if (header == (byte)SendOption.Reliable)
+                {
+                    var ack = reader.ReadInt16();
+                }
+
+                int length = reader.ReadInt16();
+                var data = reader.ReadBytes(length);
+                buffers.Add(data);
+            }
+            
+            return buffers;
         }
 
         private static void HandleToClient(string source, MessageReader packet)
