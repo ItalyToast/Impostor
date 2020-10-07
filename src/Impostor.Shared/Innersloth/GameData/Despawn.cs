@@ -6,7 +6,17 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.GameData
 {
-    class Despawn
+     public class Despawn
     {
+        public int netId;
+
+        public static Despawn Deserialize(HazelBinaryReader reader)
+        {
+            var msg = new Despawn();
+
+            msg.netId = reader.ReadPackedInt32();
+
+            return msg;
+        }
     }
 }

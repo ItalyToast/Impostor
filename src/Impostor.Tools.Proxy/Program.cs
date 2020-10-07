@@ -10,6 +10,7 @@ using Impostor.Server.Net.Messages;
 using Impostor.Shared;
 using Impostor.Shared.Innersloth.Enums;
 using Impostor.Shared.Innersloth.GameData;
+using Impostor.Shared.Innersloth.InnerNetComponents;
 using Impostor.Shared.Innersloth.Messages;
 using Impostor.Shared.Innersloth.RpcCommands;
 using Newtonsoft.Json;
@@ -21,20 +22,22 @@ namespace Impostor.Tools.Proxy
     internal static class Program
     {
         static int gamedataId = 0;
+        static int allId = 0;
 
         private const string DeviceName = "Network adapter 'Intel(R) Ethernet Connection I217-V' on local host";
 
-        public static bool LogNotConsumed = false;
+        public static bool LogNotConsumed = true;
         public static bool LogMoves = false;
         public static bool LogRPC = false;
         public static bool LogChat = false;
+        public static bool SaveMessages = false;
 
 
         public static Dictionary<int, PlayerState> players = new Dictionary<int, PlayerState>();
 
         private static void Main(string[] args)
         {
-
+            Directory.CreateDirectory("all");
             //foreach (var f in Directory.EnumerateFiles("spawn"))
             //{
             //    var fi = new FileInfo(f);
@@ -66,6 +69,26 @@ namespace Impostor.Tools.Proxy
             //        //throw new Exception();
             //    }
             //}
+
+            Regex idregex = new Regex("_(\\d+)_(\\d+)");
+            foreach (var f in Directory.EnumerateFiles("all").OrderBy(p => int.Parse(idregex.Match(p).Groups[2].Value)))
+            {
+                var fi = new FileInfo(f);
+                var send = fi.Name.Contains("send");
+
+                var body = File.ReadAllBytes(f);
+                var reader = MessageReader.Get(body);
+                reader.Tag = byte.Parse(idregex.Match(fi.Name).Groups[1].Value);
+
+                if (send)
+                {
+                    HandleToServer("file", reader);
+                }
+                else
+                {
+                    HandleToClient("file", reader);
+                }
+            }
 
 
 
@@ -162,7 +185,11 @@ namespace Impostor.Tools.Proxy
             {
                 var reader = packet.GetHazelReader();
                 var body = reader.PeekToEnd();
-
+                if (SaveMessages)
+                {
+                    File.WriteAllBytes(Path.Combine("all", $"recv_{packet.Tag}_{allId++}.bin"), body);
+                }
+                
                 switch (messageType)
                 {
                     case MessageType.ReselectServer:
@@ -190,6 +217,15 @@ namespace Impostor.Tools.Proxy
                     case MessageType.JoinedGame:
                         var joined = JoinedGame.Deserialize(reader);
                         DumpToConsole(joined);
+
+                        var pid = 2;
+                        for (int i = 0; i < joined.otherPlayerIds.Count; i++)
+                        {
+                            EntityTracker.Add(new DummyComponent() { NetId = pid++ });
+                            EntityTracker.Add(new DummyComponent() { NetId = pid++ });
+                            EntityTracker.Add(new DummyComponent() { NetId = pid++ });
+                            EntityTracker.Add(new DummyComponent() { NetId = pid++ });
+                        }
                         break;
                     case MessageType.AlterGame:
                         var alter = AlterGameResponse.Deserialize(reader);
@@ -201,10 +237,16 @@ namespace Impostor.Tools.Proxy
                         break;
 
                     case MessageType.RemovePlayer:
+                        var removeplayer = RemovePlayerResponse.Deserialize(reader);
+                        DumpToConsole(removeplayer);
                         break;
                     case MessageType.StartGame:
                         var start = StartGame.Deserialize(reader);
                         DumpToConsole(start);
+                        break;
+                    case MessageType.EndGame:
+                        var end = EndGame.Deserialize(reader);
+                        DumpToConsole(end);
                         break;
                     default:
                         Console.WriteLine($"Unhandled Message: {messageType} size: {body.Length}");
@@ -232,7 +274,11 @@ namespace Impostor.Tools.Proxy
             {
                 var reader = packet.GetHazelReader();
                 var body = reader.PeekToEnd();
-
+                if (SaveMessages)
+                {
+                    File.WriteAllBytes(Path.Combine("all", $"send_{packet.Tag}_{allId++}.bin"), body);
+                }
+                
                 switch (messageType)
                 {
                     case MessageType.HostGame:
@@ -255,8 +301,12 @@ namespace Impostor.Tools.Proxy
                         HandleGameDataTo(gamedatato, true);
                         break;
                     case MessageType.GetGameListV2:
-                        //var gamelist = GetGameListV2Request.Deserialize(reader);
-                        //DumpToConsole(gamelist);
+                        var gamelistrequest = GetGameListV2Request.Deserialize(reader);
+                        DumpToConsole(gamelistrequest);
+                        break;
+                    case MessageType.RemovePlayer:
+                        var removeplayer = RemovePlayerRequest.Deserialize(reader);
+                        DumpToConsole(removeplayer);
                         break;
                     default:
                         Console.WriteLine($"Unhandled Message: {messageType} size: {body.Length}");
@@ -299,16 +349,6 @@ namespace Impostor.Tools.Proxy
             var dir = send ? "SEND" : "RECV";
             switch (datatype)
             {
-                case GameDataType.Move:
-                    var move = Move.Deserialize(reader);
-                    if (LogMoves)
-                    {
-                        Console.WriteLine($"[{dir}]Move command player: {move.ownerId:0000} seq: {move.seq:0000} pos: {move.position} delta: {move.velocity}");
-                    }
-
-                    //if (reader.HasBytesLeft()) throw new Exception();
-                    break;
-
                 case GameDataType.RpcCall:
                     var RPC = RpcCall.Deserialize(reader);
                     DumpToConsole(RPC, LogRPC);
@@ -324,6 +364,10 @@ namespace Impostor.Tools.Proxy
                             DumpToConsole(CheckName, LogRPC);
                             break;
 
+                        case RpcCalls.CloseDoorsOfType:
+                            var CloseDoorsOfType = RpcCloseDoorsOfType.Deserialize(reader);
+                            DumpToConsole(CloseDoorsOfType, LogRPC);
+                            break;
                         case RpcCalls.EnterVent:
                             var EnterVent = RpcEnterVent.Deserialize(reader);
                             DumpToConsole(EnterVent, LogRPC);
@@ -421,6 +465,7 @@ namespace Impostor.Tools.Proxy
                         //Currently not implemented
                         case RpcCalls.UpdateGameData:
                         case RpcCalls.SetStartCounter:
+                        case RpcCalls.SyncSettings:
                             break;
                         default:
                             Console.WriteLine($"Unhandled RPC command: " + RPC.callId);
@@ -428,28 +473,82 @@ namespace Impostor.Tools.Proxy
                     }
                     break;
 
+                case GameDataType.Data:
+                    //var data = Data.Deserialize(reader);
+                    //var entity = EntityTracker.entities[data.netId];
+                    //if (!(entity is CustomNetworkTransform))
+                    //{
+                    //    Console.WriteLine($"Recived Data for: {entity.GetType().Name} size: {data.data}");
+                    //}
+                    
+                    //entity.Deserialize(new HazelBinaryReader(data.data), false);
 
+                    //if (LogMoves && entity is CustomNetworkTransform move)
+                    //{
+                    //    Console.WriteLine($"[{dir}]Move command player: {move.OwnerId:0000} seq: {move.seq:0000} pos: {move.position} delta: {move.velocity}");
+                    //}
+
+                    break;
 
                 case GameDataType.Spawn:
-                    Console.WriteLine($"#################################");
-                    Console.WriteLine($"Spawn");
-                    Console.WriteLine(HexUtils.HexDump(reader.PeekToEnd()));
                     var spawn = Spawn.Deserialize(reader);
+                    Console.WriteLine("Spawning: " + spawn.spawnId);
+                    switch (spawn.spawnId)
+                    {
+                        case 1:
+                            var meeting = new MeetingHud();
+                            meeting.OwnerId = spawn.ownerId;
+                            meeting.NetId = spawn.children[0].netId;
+                            EntityTracker.Add(meeting);
 
-                    //Directory.CreateDirectory("spawn");
-                    //File.WriteAllBytes(Path.Combine("spawn", $"gamedata_spawn_{spawn_id++}.bin"), data.body);
+
+                            break;
+                        case 2:
+                            var lobby = new LobbyBehaviour();
+                            lobby.OwnerId = spawn.ownerId;
+                            lobby.NetId = spawn.children[0].netId;
+                            EntityTracker.Add(lobby);
+                            break;
+                        case 3:
+                            var dummy = new DummyComponent();
+                            dummy.OwnerId = spawn.ownerId;
+                            dummy.NetId = spawn.children[0].netId;
+                            dummy.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
+                            EntityTracker.Add(dummy);
+                            break;
+                        case 4://player character
+                            var nettransform = new CustomNetworkTransform();
+                            nettransform.OwnerId = spawn.ownerId;
+                            nettransform.NetId = spawn.children[2].netId;
+                            nettransform.Deserialize(new HazelBinaryReader(spawn.children[2].body), true);
+                            EntityTracker.Add(nettransform);
+                            DumpToConsole(nettransform);
+
+                            EntityTracker.Add(DummyComponent.Spawn(spawn.ownerId, spawn.children[0]));
+                            EntityTracker.Add(DummyComponent.Spawn(spawn.ownerId, spawn.children[1]));
+                            break;
+                        default:
+                            Console.WriteLine($"Unhandled spawnid: {spawn.spawnId}");
+                            break;
+                    }
                     break;
                 case GameDataType.SceneChange:
                     var scene = SceneChange.Deserialize(reader);
                     DumpToConsole(scene);
                     break;
                 case GameDataType.Despawn:
+                    var despawn = Despawn.Deserialize(reader);
+                    EntityTracker.entities.Remove(despawn.netId);
+                    DumpToConsole(despawn);
                     break;
                 case GameDataType.Ready:
                     var ready = Ready.Deserialize(reader);
                     Console.WriteLine($"Ready: " + ready.playerId);
                     break;
-
+                case GameDataType.ChangeSettings:
+                    var changesettings = ChangeSettings.Deserialize(reader);
+                    DumpToConsole(changesettings);
+                    break;
                 default:
                     Console.WriteLine($"Unhandled Gamedatatype: {datatype}");
                     break;
