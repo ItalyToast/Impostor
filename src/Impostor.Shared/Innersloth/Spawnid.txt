@@ -1,0 +1,87 @@
+ShipStatus (ShipStatus)
+  name: ShipStatus
+  GetScriptClassName(): ShipStatus
+  sendMode: Reliable
+  NetId: 0
+  OwnerId: 0
+  SpawnFlags: None
+  SpawnId: 0
+  GCMLCMAKHHM: False
+  MDLOFNCNFAH: True
+
+MeetingHub (MeetingHud)
+  name: MeetingHub
+  GetScriptClassName(): MeetingHud
+  sendMode: Reliable
+  NetId: 0
+  OwnerId: 0
+  SpawnFlags: None
+  SpawnId: 1
+  GCMLCMAKHHM: False
+  MDLOFNCNFAH: True
+
+Lobby (LobbyBehaviour)
+  name: Lobby
+  GetScriptClassName(): LobbyBehaviour
+  sendMode: Reliable
+  NetId: 0
+  OwnerId: 0
+  SpawnFlags: None
+  SpawnId: 2
+  GCMLCMAKHHM: False
+  MDLOFNCNFAH: True
+
+GameData (GameData)
+  name: GameData
+  GetScriptClassName(): GameData
+  sendMode: Reliable
+  NetId: 0
+  OwnerId: 0
+  SpawnFlags: None
+  SpawnId: 3
+  GCMLCMAKHHM: False
+  MDLOFNCNFAH: True
+
+Player (PlayerControl)
+  name: Player
+  GetScriptClassName(): PlayerControl
+  sendMode: Reliable
+  NetId: 0
+  OwnerId: 0
+  SpawnFlags: None
+  SpawnId: 4
+  GCMLCMAKHHM: False
+  MDLOFNCNFAH: True
+
+HeadQuarters (ShipStatus)
+  name: HeadQuarters
+  GetScriptClassName(): ShipStatus
+  sendMode: Reliable
+  NetId: 0
+  OwnerId: 0
+  SpawnFlags: None
+  SpawnId: 5
+  GCMLCMAKHHM: False
+  MDLOFNCNFAH: True
+
+PlanetMap (ShipStatus)
+  name: PlanetMap
+  GetScriptClassName(): ShipStatus
+  sendMode: Reliable
+  NetId: 0
+  OwnerId: 0
+  SpawnFlags: None
+  SpawnId: 6
+  GCMLCMAKHHM: False
+  MDLOFNCNFAH: True
+
+AprilShipStatus (ShipStatus)
+  name: AprilShipStatus
+  GetScriptClassName(): ShipStatus
+  sendMode: Reliable
+  NetId: 0
+  OwnerId: 0
+  SpawnFlags: None
+  SpawnId: 7
+  GCMLCMAKHHM: False
+  MDLOFNCNFAH: True
