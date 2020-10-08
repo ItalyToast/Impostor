@@ -20,6 +20,11 @@ namespace Impostor.Shared
             return Read7BitEncodedInt();
         }
 
+        public uint ReadPackedUInt32()
+        {
+            return (uint)Read7BitEncodedInt();
+        }
+
         public override byte[] ReadBytes(int count)
         {
             var result = base.ReadBytes(count);

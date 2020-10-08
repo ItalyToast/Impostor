@@ -2,7 +2,7 @@
 {
     public enum GameDataType
     {
-        Move = 1,
+        Data = 1,
         RpcCall = 2,
         Spawn = 4,
         Despawn = 5,

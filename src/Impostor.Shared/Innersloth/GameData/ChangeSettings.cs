@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.GameData
 {
-    class ChangeSettings
+    public class ChangeSettings
     {
+        public static ChangeSettings Deserialize(HazelBinaryReader reader)
+        {
+            var msg = new ChangeSettings();
+
+            return msg;
+        }
     }
 }
