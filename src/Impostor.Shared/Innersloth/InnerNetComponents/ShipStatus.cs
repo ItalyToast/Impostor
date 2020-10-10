@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.InnerNetComponents
 {
-    public class GameDataComponent : InnerNetObject
+    public class ShipStatus : InnerNetObject
     {
         public override void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
             if (onSpawn)
             {
-                Console.WriteLine("Unhandled Gamedata deserialize() on spawn");
+                Console.WriteLine("Unhandled Shipstatus.Deserialize() on spawn");
                 return;
             }
-            Console.WriteLine("Unhandled Gamedata deserialize()");
+            Console.WriteLine("Unhandled Shipstatus.Deserialize()");
         }
     }
 }

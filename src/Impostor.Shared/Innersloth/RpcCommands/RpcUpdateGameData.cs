@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Impostor.Shared.Innersloth.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,14 +10,37 @@ namespace Impostor.Shared.Innersloth.RpcCommands
     public class RpcUpdateGameData
     {
         public string name;
-        public static RpcUpdateGameData Deserialize(HazelBinaryReader reader)
+        public byte playerId;
+        public Hat hat;
+        public Skin skin;
+        public byte color;
+        public Pet pet;
+        public byte unknown;
+        public static List<RpcUpdateGameData> Deserialize(HazelBinaryReader reader)
         {
-            var msg = new RpcUpdateGameData();
+            var items = new List<RpcUpdateGameData>();
+            
+            while (reader.HasBytesLeft())
+            {
+                var msg = new RpcUpdateGameData();
+                var length = reader.ReadInt16();
+                var body = new HazelBinaryReader(reader.ReadBytes(length));
+                reader.ReadByte();
 
-            //var u1 = reader.ReadBytes(3);
-            //msg.name = reader.ReadString();
-            //var u2 = reader.ReadBytes(6);
-            return msg;
+                msg.playerId = body.ReadByte();
+                msg.name = body.ReadString();
+                //TODO: Figure out what these bytes are
+
+                msg.color = body.ReadByte();
+                msg.hat = (Hat)body.ReadByte();
+                msg.pet = (Pet)body.ReadByte();
+                msg.skin = (Skin)body.ReadByte();
+                msg.unknown = body.ReadByte();
+
+                items.Add(msg);
+            }
+
+            return items;
         }
     }
 }

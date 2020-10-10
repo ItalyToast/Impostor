@@ -61,42 +61,46 @@ namespace Impostor.Shared.Innersloth
 
         public static GameOptionsData Deserialize(byte[] bytes)
         {
-            using (var stream = new MemoryStream(bytes))
-            using (var reader = new BinaryReader(stream))
+            using (var reader = new HazelBinaryReader(bytes))
             {
-                var result = new GameOptionsData();
-
-                result.Version = reader.ReadByte();
-                result.MaxPlayers = reader.ReadByte();
-                result.Keywords = (GameKeywords) reader.ReadUInt32();
-                result.MapId = reader.ReadByte();
-                result.PlayerSpeedMod = reader.ReadSingle();
-                result.CrewLightMod = reader.ReadSingle();
-                result.ImpostorLightMod = reader.ReadSingle();
-                result.KillCooldown = reader.ReadSingle();
-                result.NumCommonTasks = reader.ReadByte();
-                result.NumLongTasks = reader.ReadByte();
-                result.NumShortTasks = reader.ReadByte();
-                result.NumEmergencyMeetings = reader.ReadInt32();
-                result.NumImpostors = reader.ReadByte();
-                result.KillDistance = reader.ReadByte();
-                result.DiscussionTime = reader.ReadInt32();
-                result.VotingTime = reader.ReadInt32();
-                result.IsDefaults = reader.ReadBoolean();
-
-                if (result.Version > 1)
-                {
-                    result.EmergencyCooldown = reader.ReadByte();
-                }
-
-                if (result.Version > 2)
-                {
-                    result.ConfirmImpostor = reader.ReadBoolean();
-                    result.VisualTasks = reader.ReadBoolean();
-                }
-                
-                return result;
+                return Deserialize(reader);
             }
+        }
+
+        public static GameOptionsData Deserialize(HazelBinaryReader reader)
+        {
+            var result = new GameOptionsData();
+
+            result.Version = reader.ReadByte();
+            result.MaxPlayers = reader.ReadByte();
+            result.Keywords = (GameKeywords)reader.ReadUInt32();
+            result.MapId = reader.ReadByte();
+            result.PlayerSpeedMod = reader.ReadSingle();
+            result.CrewLightMod = reader.ReadSingle();
+            result.ImpostorLightMod = reader.ReadSingle();
+            result.KillCooldown = reader.ReadSingle();
+            result.NumCommonTasks = reader.ReadByte();
+            result.NumLongTasks = reader.ReadByte();
+            result.NumShortTasks = reader.ReadByte();
+            result.NumEmergencyMeetings = reader.ReadInt32();
+            result.NumImpostors = reader.ReadByte();
+            result.KillDistance = reader.ReadByte();
+            result.DiscussionTime = reader.ReadInt32();
+            result.VotingTime = reader.ReadInt32();
+            result.IsDefaults = reader.ReadBoolean();
+
+            if (result.Version > 1)
+            {
+                result.EmergencyCooldown = reader.ReadByte();
+            }
+
+            if (result.Version > 2)
+            {
+                result.ConfirmImpostor = reader.ReadBoolean();
+                result.VisualTasks = reader.ReadBoolean();
+            }
+
+            return result;
         }
     }
 }

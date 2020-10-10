@@ -182,9 +182,6 @@ namespace Impostor.Server.Net
                         return;
                     }
 
-                    Directory.CreateDirectory("Dump");
-                    File.WriteAllBytes($"Dump\\GameData_{flag}_{DateTime.Now.Ticks}.bin", message.Buffer.Take(message.Length).ToArray());
-
                     // Broadcast packet to all other players.
                     using (var writer = MessageWriter.Get(sendOption))
                     {

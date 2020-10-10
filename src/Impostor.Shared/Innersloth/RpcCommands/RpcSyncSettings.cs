@@ -14,8 +14,8 @@ namespace Impostor.Shared.Innersloth.RpcCommands
         {
             var msg = new RpcSyncSettings();
 
-            var optionsBody = reader.ReadBytesAndSize();
-            msg.gameOptions = GameOptionsData.Deserialize(optionsBody);
+            var body = reader.ReadBytesToEnd();
+            msg.gameOptions = GameOptionsData.Deserialize(body);
 
             return msg;
         }

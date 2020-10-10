@@ -10,13 +10,23 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
     {
 		public class PlayerVoteArea
 		{
-
+			public byte value;
 		}
+
+		public List<PlayerVoteArea> playerStates = new List<PlayerVoteArea>();
+
 		public override void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
 			if (onSpawn)
 			{
 				Console.WriteLine("Meetinghud spawn");
+                for (int i = 0; i < 10; i++)
+                {
+					playerStates.Add(new PlayerVoteArea()
+					{
+						value = reader.ReadByte(),
+					});
+                }
 				//this.PopulateButtons(0);
 				//for (int i = 0; i < this.playerStates.Length; i++)
 				//{
@@ -30,18 +40,14 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
 				return;
 			}
 			Console.WriteLine("Meetinghud data");
-			//uint num = reader.ReadPackedUInt32();
-			//for (int j = 0; j < this.playerStates.Length; j++)
-			//{
-			//	if ((num & 1u << j) != 0u)
-			//	{
-			//		this.playerStates[j].Deserialize(reader);
-			//	}
-			//}
-		}
-
-        void PopulateButtons(int v)
-        {
+			uint updateMask = reader.ReadPackedUInt32();
+            for (int j = 0; j < 10; j++)
+            {
+                if ((updateMask & (1u << j)) != 0u)
+                {
+                    playerStates[j].value = reader.ReadByte();
+                }
+            }
         }
     }
 }
