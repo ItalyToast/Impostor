@@ -14,17 +14,24 @@ namespace Impostor.Shared.Innersloth.Messages
         public byte type;
         public byte[] body;
 
-        public static GameDataTo Deserialize(HazelBinaryReader reader)
+        public static List<GameDataTo> Deserialize(HazelBinaryReader reader)
         {
-            var msg = new GameDataTo();
+            var gameId = reader.ReadInt32();
+            var netId = reader.ReadPackedInt32();
+            var gamedatas = new List<GameDataTo>();
 
-            msg.gameId = reader.ReadInt32();
-            msg.netId = reader.ReadPackedInt32();
-            var size = reader.ReadInt16();
-            msg.type = reader.ReadByte();
-            msg.body = reader.ReadBytes(size);
+            while (reader.HasBytesLeft())
+            {
+                var msg = new GameDataTo();
+                msg.gameId = gameId;
+                msg.netId = netId;
+                var size = reader.ReadInt16();
+                msg.type = reader.ReadByte();
+                msg.body = reader.ReadBytes(size);
+                gamedatas.Add(msg);
+            }
 
-            return msg;
+            return gamedatas;
         }
     }
 }

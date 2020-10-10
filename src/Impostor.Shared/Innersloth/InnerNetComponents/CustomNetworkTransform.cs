@@ -26,6 +26,10 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
 				return;
 			}
 
+			seq = reader.ReadInt16();
+			position = reader.ReadLerpVector2(xyrange, xyrange);
+			velocity = reader.ReadLerpVector2(xyrange, xyrange);
+
 			//ushort newSid = reader.ReadUInt16();
 			//if (!CustomNetworkTransform.SidGreaterThan(newSid, this.lastSequenceId))
 			//{

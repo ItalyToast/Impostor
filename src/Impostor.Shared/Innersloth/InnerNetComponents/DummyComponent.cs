@@ -9,6 +9,8 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
 {
     public class DummyComponent : InnerNetObject
     {
+        public string name;
+
         public static DummyComponent Spawn(int ownerId, Spawn.SpawnChild spawn)
         {
             return new DummyComponent()
@@ -20,7 +22,7 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
 
         public override void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"Attempted Deserialize for DummyComponent: {name} size: {reader.GetBytesLeft()}");
         }
     }
 }

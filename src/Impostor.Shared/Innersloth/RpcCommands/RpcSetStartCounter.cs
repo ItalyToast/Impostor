@@ -6,16 +6,17 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.RpcCommands
 {
-    public class RpcSendChatNote
+    public class RpcSetStartCounter
     {
         public byte b1;
-        public byte b2;
-        public static RpcSendChatNote Deserialize(HazelBinaryReader reader)
+        public byte secondsLeft;
+
+        public static RpcSetStartCounter Deserialize(HazelBinaryReader reader)
         {
-            var msg = new RpcSendChatNote();
+            var msg = new RpcSetStartCounter();
 
             msg.b1 = reader.ReadByte();
-            msg.b2 = reader.ReadByte();
+            msg.secondsLeft = reader.ReadByte();
 
             return msg;
         }

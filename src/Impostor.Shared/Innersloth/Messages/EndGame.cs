@@ -8,13 +8,15 @@ namespace Impostor.Shared.Innersloth.Messages
 {
     public class EndGame
     {
-        //public int gameId;
+        public int gameId;
 
         public static EndGame Deserialize(HazelBinaryReader reader)
         {
             var msg = new EndGame();
 
-            //msg.gameId = reader.ReadInt32();
+            var b1 = reader.ReadByte();
+            var b2 = reader.ReadByte();
+            msg.gameId = reader.ReadInt32();
 
             return msg;
         }

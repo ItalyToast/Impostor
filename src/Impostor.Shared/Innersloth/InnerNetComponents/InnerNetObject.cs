@@ -24,5 +24,10 @@ namespace Impostor.Shared.Innersloth
 		protected bool DespawnOnDestroy = true;
 
 		public abstract void Deserialize(HazelBinaryReader reader, bool onSpawn);
+
+		public virtual void HandleRpcCall(RpcCalls rpcCall, HazelBinaryReader reader)
+        {
+			Console.WriteLine($"[{GetType().Name}]Recived RPC call: {rpcCall}");
+        }
     }
 }

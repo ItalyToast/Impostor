@@ -8,6 +8,7 @@ using Hazel;
 using Hazel.Udp;
 using Impostor.Server.Net.Messages;
 using Impostor.Shared;
+using Impostor.Shared.Innersloth;
 using Impostor.Shared.Innersloth.Enums;
 using Impostor.Shared.Innersloth.GameData;
 using Impostor.Shared.Innersloth.InnerNetComponents;
@@ -31,6 +32,11 @@ namespace Impostor.Tools.Proxy
         public static bool LogRPC = false;
         public static bool LogChat = false;
         public static bool SaveMessages = false;
+
+        public static bool BreakOnGameStart = true;
+        public static bool BreakOnGameEnd = true;
+        public static bool BreakOnMettingStart = true;
+        public static bool BreakOnMeetingEnd = true;
 
 
         public static Dictionary<int, PlayerState> players = new Dictionary<int, PlayerState>();
@@ -130,23 +136,24 @@ namespace Impostor.Tools.Proxy
 
                 foreach (var item in messages)
                 {
-                    var reader = MessageReader.Get(item);
+                    var tag = item.First();
+                    var reader = MessageReader.Get(item.Skip(1).ToArray());
+                    reader.Tag = tag;
                     if (reader.Position >= reader.Length)
                     {
                         break;
                     }
 
-                    var message = reader.ReadMessage();
                     if (isSent)
                     {
-                        HandleToServer(ipSrc, message);
+                        HandleToServer(ipSrc, reader);
                     }
                     else
                     {
-                        HandleToClient(ipSrc, message);
+                        HandleToClient(ipSrc, reader);
                     }
 
-                    if (message.Position < message.Length)
+                    if (reader.Position < reader.Length)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("- Did not consume all bytes.");
@@ -161,25 +168,24 @@ namespace Impostor.Tools.Proxy
 
             HazelBinaryReader reader = new HazelBinaryReader(stream);
 
+            var header = reader.ReadByte();
+            if (header == (byte)UdpSendOption.Acknowledgement ||
+                 header == (byte)UdpSendOption.Ping ||
+                 header == (byte)UdpSendOption.Hello ||
+                 header == (byte)UdpSendOption.Disconnect)
+            {
+                return buffers;
+            }
+
+            if (header == (byte)SendOption.Reliable)
+            {
+                var ack = reader.ReadInt16();
+            }
 
             while (reader.HasBytesLeft())
             {
-                var header = reader.ReadByte();
-                if ( header == (byte)UdpSendOption.Acknowledgement ||
-                     header == (byte)UdpSendOption.Ping ||
-                     header == (byte)UdpSendOption.Hello ||
-                     header == (byte)UdpSendOption.Disconnect)
-                {
-                    break;
-                }
-
-                if (header == (byte)SendOption.Reliable)
-                {
-                    var ack = reader.ReadInt16();
-                }
-
                 int length = reader.ReadInt16();
-                var data = reader.ReadBytes(length);
+                var data = reader.ReadBytes(length + 1);
                 buffers.Add(data);
             }
             
@@ -204,6 +210,7 @@ namespace Impostor.Tools.Proxy
                 switch (messageType)
                 {
                     case MessageType.ReselectServer:
+                        break;
                     case MessageType.Redirect:
                         break;
                     case MessageType.HostGame:
@@ -216,27 +223,24 @@ namespace Impostor.Tools.Proxy
                         break;
                     case MessageType.GameData:
                         var gamedata = GameData.Deserialize(reader);
-                        HandleGameData(gamedata, false);
+                        foreach (var item in gamedata)
+                        {
+                            HandleGameData(item, false);
+                        }
 
-                        Directory.CreateDirectory("gamedata");
-                        File.WriteAllBytes(Path.Combine("gamedata", $"recv_data_{gamedataId++}.bin"), body);
+                        //Directory.CreateDirectory("gamedata");
+                        //File.WriteAllBytes(Path.Combine("gamedata", $"recv_data_{gamedataId++}.bin"), body);
                         break;
                     case MessageType.GameDataTo:
                         var gamedatato = GameDataTo.Deserialize(reader);
-                        HandleGameDataTo(gamedatato, false);
+                        foreach (var item in gamedatato)
+                        {
+                            HandleGameDataTo(item, false);
+                        }
                         break;
                     case MessageType.JoinedGame:
                         var joined = JoinedGame.Deserialize(reader);
                         DumpToConsole(joined);
-
-                        var pid = 2;
-                        for (int i = 0; i < joined.otherPlayerIds.Count; i++)
-                        {
-                            EntityTracker.Add(new DummyComponent() { NetId = pid++ });
-                            EntityTracker.Add(new DummyComponent() { NetId = pid++ });
-                            EntityTracker.Add(new DummyComponent() { NetId = pid++ });
-                            EntityTracker.Add(new DummyComponent() { NetId = pid++ });
-                        }
                         break;
                     case MessageType.AlterGame:
                         var alter = AlterGameResponse.Deserialize(reader);
@@ -266,7 +270,7 @@ namespace Impostor.Tools.Proxy
 
                 if (reader.GetBytesLeft() > 0 && LogNotConsumed)
                 {
-                    Console.WriteLine($"{reader.GetBytesLeft()} bytes not cunsumed");
+                    Console.WriteLine($"[{messageType}]{reader.GetBytesLeft()} bytes not cunsumed");
                 }
             }
             catch (Exception ex)
@@ -302,14 +306,19 @@ namespace Impostor.Tools.Proxy
                         break;
                     case MessageType.GameData:
                         var gamedata = GameData.Deserialize(reader);
-                        HandleGameData(gamedata, true);
-
-                        Directory.CreateDirectory("gamedata");
-                        File.WriteAllBytes(Path.Combine("gamedata", $"send_data_{gamedataId++}.bin"), body);
+                        foreach (var item in gamedata)
+                        {
+                            HandleGameData(item, true);
+                        }
+                        //Directory.CreateDirectory("gamedata");
+                        //File.WriteAllBytes(Path.Combine("gamedata", $"send_data_{gamedataId++}.bin"), body);
                         break;
                     case MessageType.GameDataTo:
                         var gamedatato = GameDataTo.Deserialize(reader);
-                        HandleGameDataTo(gamedatato, true);
+                        foreach (var item in gamedatato)
+                        {
+                            HandleGameDataTo(item, true);
+                        }
                         break;
                     case MessageType.GetGameListV2:
                         var gamelistrequest = GetGameListV2Request.Deserialize(reader);
@@ -326,7 +335,7 @@ namespace Impostor.Tools.Proxy
 
                 if (reader.GetBytesLeft() > 0 && LogNotConsumed)
                 {
-                    Console.WriteLine($"{reader.GetBytesLeft()} bytes not cunsumed");
+                    Console.WriteLine($"[{messageType}]{reader.GetBytesLeft()} bytes not cunsumed");
                 }
             }
             catch (Exception ex)
@@ -362,7 +371,16 @@ namespace Impostor.Tools.Proxy
             {
                 case GameDataType.RpcCall:
                     var RPC = RpcCall.Deserialize(reader);
-                    DumpToConsole(RPC, LogRPC);
+                    var reciver = EntityTracker.Get(RPC.targetNetId);
+                    if (LogRPC)
+                    {
+                        Console.WriteLine($"[RPC][{RPC.callId}]sent to {reciver?.GetType()?.Name ?? "unknown"} size: {reader.GetBytesLeft()}");
+                    }
+                    if (reciver != null)
+                    {
+                        reciver.HandleRpcCall(RPC.callId, reader);
+                    }
+                    //DumpToConsole(RPC, LogRPC);
                     //Console.WriteLine($"RPC for type: {RPC} size: {data.body.Length}");
                     switch (RPC.callId)
                     {
@@ -424,6 +442,10 @@ namespace Impostor.Tools.Proxy
                             var SetTasks = RpcSetTasks.Deserialize(reader);
                             DumpToConsole(SetTasks, LogRPC);
                             break;
+                        case RpcCalls.SetInfected:
+                            var infected = RpcSetInfected.Deserialize(reader);
+                            DumpToConsole(infected);
+                            break;
                         case RpcCalls.SetScanner:
                             var SetScanner = RpcSetScanner.Deserialize(reader);
                             DumpToConsole(SetScanner, LogRPC);
@@ -448,6 +470,7 @@ namespace Impostor.Tools.Proxy
                        
                         case RpcCalls.MurderPlayer:
                             var MurderPlayer = RpcMurderPlayer.Deserialize(reader);
+                            var player = EntityTracker.Get(MurderPlayer.netId);
                             DumpToConsole(MurderPlayer, LogRPC);
                             break;
                         case RpcCalls.RepairSystem:
@@ -471,33 +494,55 @@ namespace Impostor.Tools.Proxy
                             var VotingComplete = RpcVotingComplete.Deserialize(reader);
                             DumpToConsole(VotingComplete, LogRPC);
                             break;
-                            //Dont have a message body
+                        case RpcCalls.SetStartCounter:
+                            var startcounter = RpcSetStartCounter.Deserialize(reader);
+                            DumpToConsole(startcounter, LogRPC);
+                            break;
+                        //Dont have a message body
                         case RpcCalls.Close:
                         //Currently not implemented
-                        case RpcCalls.UpdateGameData:
-                        case RpcCalls.SetStartCounter:
+                        
                         case RpcCalls.SyncSettings:
+                            var syncsettings = RpcSyncSettings.Deserialize(reader);
+                            DumpToConsole(syncsettings, LogRPC);
                             break;
+
+                        //ComponentSpecific - it contains diffrent data depending on what component it's inteded for
+                        case RpcCalls.UpdateGameData:
+                            var update = RpcUpdateGameData.Deserialize(reader);
+                            DumpToConsole(update, LogRPC);
+                            break;
+
                         default:
                             Console.WriteLine($"Unhandled RPC command: " + RPC.callId);
                             break;
                     }
+                    if (reader.GetBytesLeft() > 0 && LogNotConsumed)
+                    {
+                        Console.WriteLine($"[{RPC.callId}]{reader.GetBytesLeft()} bytes not cunsumed");
+                        reader.ReadBytesToEnd();
+                    }
                     break;
 
                 case GameDataType.Data:
-                    //var data = Data.Deserialize(reader);
-                    //var entity = EntityTracker.entities[data.netId];
-                    //if (!(entity is CustomNetworkTransform))
-                    //{
-                    //    Console.WriteLine($"Recived Data for: {entity.GetType().Name} size: {data.data}");
-                    //}
-                    
-                    //entity.Deserialize(new HazelBinaryReader(data.data), false);
+                    var data = Data.Deserialize(reader);
+                    InnerNetObject entity;
+                    if (!EntityTracker.entities.TryGetValue(data.netId, out entity))
+                    {
+                        Console.WriteLine($"Entity missing for id: {data.netId} size: {data.data.Length}");
+                        return;
+                    }
+                    if (!(entity is CustomNetworkTransform))
+                    {
+                        Console.WriteLine($"Recived Data for: {entity.GetType().Name} size: {data.data}");
+                    }
 
-                    //if (LogMoves && entity is CustomNetworkTransform move)
-                    //{
-                    //    Console.WriteLine($"[{dir}]Move command player: {move.OwnerId:0000} seq: {move.seq:0000} pos: {move.position} delta: {move.velocity}");
-                    //}
+                    entity.Deserialize(new HazelBinaryReader(data.data), false);
+
+                    if (LogMoves && entity is CustomNetworkTransform move)
+                    {
+                        Console.WriteLine($"[{dir}]Move command player: {move.OwnerId:0000} seq: {move.seq:0000} pos: {move.position} delta: {move.velocity}");
+                    }
 
                     break;
 
@@ -511,8 +556,6 @@ namespace Impostor.Tools.Proxy
                             meeting.OwnerId = spawn.ownerId;
                             meeting.NetId = spawn.children[0].netId;
                             EntityTracker.Add(meeting);
-
-
                             break;
                         case 2:
                             var lobby = new LobbyBehaviour();
@@ -521,23 +564,45 @@ namespace Impostor.Tools.Proxy
                             EntityTracker.Add(lobby);
                             break;
                         case 3:
-                            var dummy = new DummyComponent();
+                            var dummy = new GameDataComponent();
                             dummy.OwnerId = spawn.ownerId;
                             dummy.NetId = spawn.children[0].netId;
                             dummy.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
                             EntityTracker.Add(dummy);
+
+                            var dummy2 = new DummyComponent();
+                            dummy2.name = "gamedata.dummy1";
+                            dummy2.OwnerId = spawn.ownerId;
+                            dummy2.NetId = spawn.children[1].netId;
+                            dummy2.Deserialize(new HazelBinaryReader(spawn.children[1].body), true);
+                            EntityTracker.Add(dummy2);
                             break;
                         case 4://player character
-                            var nettransform = new CustomNetworkTransform();
-                            nettransform.OwnerId = spawn.ownerId;
-                            nettransform.NetId = spawn.children[2].netId;
-                            nettransform.Deserialize(new HazelBinaryReader(spawn.children[2].body), true);
-                            EntityTracker.Add(nettransform);
-                            DumpToConsole(nettransform);
+                            var player = new PlayerControl();
+                            player.dummy0 = new DummyComponent();
+                            player.dummy0.name = "player.dummy0";
+                            player.dummy0.OwnerId = spawn.ownerId;
+                            player.dummy0.NetId = spawn.children[0].netId;
+                            player.dummy0.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
+                            EntityTracker.Add(player.dummy0);
 
-                            EntityTracker.Add(DummyComponent.Spawn(spawn.ownerId, spawn.children[0]));
-                            EntityTracker.Add(DummyComponent.Spawn(spawn.ownerId, spawn.children[1]));
+                            player.dummy1 = new DummyComponent();
+                            player.dummy1.name = "player.dummy1";
+                            player.dummy1.OwnerId = spawn.ownerId;
+                            player.dummy1.NetId = spawn.children[1].netId;
+                            player.dummy1.Deserialize(new HazelBinaryReader(spawn.children[1].body), true);
+                            EntityTracker.Add(player.dummy1);
+
+                            player.transform = new CustomNetworkTransform();
+                            player.transform.OwnerId = spawn.ownerId;
+                            player.transform.NetId = spawn.children[2].netId;
+                            player.transform.Deserialize(new HazelBinaryReader(spawn.children[2].body), true);
+                            EntityTracker.Add(player.transform);
+                            DumpToConsole(player);
                             break;
+                        case 5://HeadQuarters
+                        case 6://PlanetMap
+                        case 7://AprilShipStatus
                         default:
                             Console.WriteLine($"Unhandled spawnid: {spawn.spawnId}");
                             break;
@@ -545,12 +610,16 @@ namespace Impostor.Tools.Proxy
                     break;
                 case GameDataType.SceneChange:
                     var scene = SceneChange.Deserialize(reader);
+                    if (scene.sceneName == "OnlineGame")
+                    {
+                        //Starting game
+                    }
                     DumpToConsole(scene);
                     break;
                 case GameDataType.Despawn:
                     var despawn = Despawn.Deserialize(reader);
                     EntityTracker.entities.Remove(despawn.netId);
-                    DumpToConsole(despawn);
+                    LogToConsole("Despawn Netid: " + despawn.netId);
                     break;
                 case GameDataType.Ready:
                     var ready = Ready.Deserialize(reader);
@@ -567,7 +636,8 @@ namespace Impostor.Tools.Proxy
 
             if (reader.GetBytesLeft() > 0 && LogNotConsumed)
             {
-                Console.WriteLine($"{reader.GetBytesLeft()} bytes not cunsumed");
+                Console.WriteLine($"[{datatype}]{reader.GetBytesLeft()} bytes not cunsumed");
+                reader.ReadBytesToEnd();
             }
         }
 
@@ -577,6 +647,11 @@ namespace Impostor.Tools.Proxy
             {
                 Console.WriteLine($"[CHAT][{sender}]{message}");
             }
+        }
+
+        static void LogToConsole(string message, bool shouldLog = true)
+        {
+            if (LogChat) Console.WriteLine(message);
         }
 
         static void DumpToConsole(object data, bool shouldLog = true)

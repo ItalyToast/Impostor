@@ -16,6 +16,7 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
         {
 			if (onSpawn)
 			{
+				Console.WriteLine("Meetinghud spawn");
 				//this.PopulateButtons(0);
 				//for (int i = 0; i < this.playerStates.Length; i++)
 				//{
@@ -26,8 +27,9 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
 				//		this.reporterId = (byte)playerVoteArea.TargetPlayerId;
 				//	}
 				//}
-				//return;
+				return;
 			}
+			Console.WriteLine("Meetinghud data");
 			//uint num = reader.ReadPackedUInt32();
 			//for (int j = 0; j < this.playerStates.Length; j++)
 			//{

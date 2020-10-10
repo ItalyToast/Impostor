@@ -10,7 +10,7 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
     {
         public override void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Unhandled Gamedata deserialize()");
         }
     }
 }

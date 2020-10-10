@@ -8,11 +8,13 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
 {
     public class PlayerControl : InnerNetObject
     {
+        public DummyComponent dummy0;
+        public DummyComponent dummy1;
         public CustomNetworkTransform transform;
+        
 
         public override void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            throw new NotImplementedException();
         }
     }
 }

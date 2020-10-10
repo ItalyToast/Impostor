@@ -12,6 +12,12 @@ namespace Impostor.Tools.Proxy
     {
         public static Dictionary<int, InnerNetObject> entities = new Dictionary<int, InnerNetObject>();
 
+        public static InnerNetObject Get(int netid)
+        {
+            InnerNetObject result;
+            entities.TryGetValue(netid, out result);
+            return result;
+        }
         public static void Add(InnerNetObject netObj)
         {
             entities.Add(netObj.NetId, netObj);
