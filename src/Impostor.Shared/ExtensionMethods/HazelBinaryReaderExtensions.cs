@@ -56,6 +56,19 @@ namespace Impostor.Shared
             return new HazelBinaryReader(data);
         }
 
+        public static List<T> ReadMessageList<T>(this HazelBinaryReader reader, Func<HazelBinaryReader, int, T> itemreader)
+        {
+            var count = reader.ReadPackedInt32();
+            var result = new List<T>();
+            for (int i = 0; i < count; i++)
+            {
+                int id;
+                var msg = reader.ReadMessage(out id);
+                result.Add(itemreader(msg, id));
+            }
+            return result;
+        }
+
         public static Vector2 ReadLerpVector2(this HazelBinaryReader binRdr, FloatRange xrange, FloatRange yrange)
         {
             float v = (float)binRdr.ReadUInt16() / 65535f;

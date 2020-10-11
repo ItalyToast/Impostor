@@ -51,5 +51,7 @@ namespace Impostor.Shared
             }
             return result;
         }
+
+        
     }
 }
