@@ -18,14 +18,14 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
             if (onSpawn)
             {
                 Console.WriteLine("PlayerControl ######");
-                var b1 = reader.ReadByte();
+                bool isNew = reader.ReadBoolean();
                 playerId = reader.ReadByte();
-                Console.WriteLine("byte1: " + b1);
+                Console.WriteLine("isNew: " + isNew);
                 Console.WriteLine("playerid: " + playerId);
                 return;
             }
-           
-            Console.WriteLine("Unhandled PlayerControl deserialize()");
+            playerId = reader.ReadByte();
+            Console.WriteLine("playerid: " + playerId);
         }
     }
 }

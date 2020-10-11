@@ -171,12 +171,16 @@ namespace Impostor.Tools.Proxy
             var header = reader.ReadByte();
             if (header == (byte)UdpSendOption.Acknowledgement ||
                  header == (byte)UdpSendOption.Ping ||
-                 header == (byte)UdpSendOption.Hello ||
                  header == (byte)UdpSendOption.Disconnect)
             {
                 return buffers;
             }
 
+            if (header == (byte)UdpSendOption.Hello )
+            {
+                Console.WriteLine("Recived Hello");
+                return buffers;
+            }
             if (header == (byte)SendOption.Reliable)
             {
                 var ack = reader.ReadInt16();

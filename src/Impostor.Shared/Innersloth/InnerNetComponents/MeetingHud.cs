@@ -8,9 +8,18 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
 {
     public class MeetingHud : InnerNetObject
     {
+		[Flags]
+		public enum PlayerVoteAreaFlags
+        {
+			VOTEDFOR_MASK = 0xF,
+			DID_REPORT = 0x20,
+			DID_VOTE = 0x40,
+			IS_DEAD = 0x80,
+		}
+
 		public class PlayerVoteArea
 		{
-			public byte value;
+			public PlayerVoteAreaFlags value;
 		}
 
 		public List<PlayerVoteArea> playerStates = new List<PlayerVoteArea>();
@@ -24,19 +33,9 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
                 {
 					playerStates.Add(new PlayerVoteArea()
 					{
-						value = reader.ReadByte(),
+						value = (PlayerVoteAreaFlags)reader.ReadByte(),
 					});
                 }
-				//this.PopulateButtons(0);
-				//for (int i = 0; i < this.playerStates.Length; i++)
-				//{
-				//	PlayerVoteArea playerVoteArea = this.playerStates[i];
-				//	playerVoteArea.Deserialize(reader);
-				//	if (playerVoteArea.didReport)
-				//	{
-				//		this.reporterId = (byte)playerVoteArea.TargetPlayerId;
-				//	}
-				//}
 				return;
 			}
 			Console.WriteLine("Meetinghud data");
@@ -45,7 +44,7 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
             {
                 if ((updateMask & (1u << j)) != 0u)
                 {
-                    playerStates[j].value = reader.ReadByte();
+                    playerStates[j].value = (PlayerVoteAreaFlags)reader.ReadByte();
                 }
             }
         }
