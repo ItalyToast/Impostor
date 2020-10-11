@@ -12,10 +12,10 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
         {
             if (onSpawn)
             {
-                Console.WriteLine("Unhandled Gamedata deserialize() on spawn");
+                Console.WriteLine($"Unhandled Gamedata deserialize() on spawn size: {reader.GetBytesLeft()}");
                 return;
             }
-            Console.WriteLine("Unhandled Gamedata deserialize()");
+            Console.WriteLine($"Unhandled Gamedata deserialize() size: {reader.GetBytesLeft()}");
         }
     }
 }

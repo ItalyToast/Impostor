@@ -12,10 +12,10 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
         {
             if (onSpawn)
             {
-                Console.WriteLine("Unhandled Shipstatus.Deserialize() on spawn");
+                Console.WriteLine($"Unhandled Shipstatus.Deserialize() on spawn size: {reader.GetBytesLeft()}");
                 return;
             }
-            Console.WriteLine("Unhandled Shipstatus.Deserialize()");
+            Console.WriteLine($"Unhandled Shipstatus.Deserialize() size: {reader.GetBytesLeft()}");
         }
     }
 }

@@ -29,7 +29,6 @@ namespace Impostor.Shared.Innersloth.RpcCommands
 
                 msg.playerId = body.ReadByte();
                 msg.name = body.ReadString();
-                //TODO: Figure out what these bytes are
 
                 msg.color = body.ReadByte();
                 msg.hat = (Hat)body.ReadByte();

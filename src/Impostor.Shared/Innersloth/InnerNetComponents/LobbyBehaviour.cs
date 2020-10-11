@@ -10,7 +10,7 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
     {
         public override void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            Console.WriteLine("Unhandled LobbyBehaviour deserialize()");
+            Console.WriteLine($"Unhandled LobbyBehaviour deserialize() size: {reader.GetBytesLeft()}");
         }
     }
 }

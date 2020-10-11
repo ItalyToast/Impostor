@@ -25,7 +25,7 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
                 return;
             }
            
-            Console.WriteLine("Unhandled PlayerControl deserialize()");
+            Console.WriteLine($"Unhandled PlayerControl deserialize() size: {reader.GetBytesLeft()}");
         }
     }
 }
