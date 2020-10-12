@@ -9,6 +9,49 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
 {
     public class ShipStatus : InnerNetObject
     {
+        Dictionary<SystemTypes, object> systems = new Dictionary<SystemTypes, object>()
+        {
+            this.Systems = new Dictionary<SystemTypes, ISystemType>(ShipStatus.SystemTypeComparer.Instance)
+            {
+                {
+                    SystemTypes.Electrical,
+                    new SwitchSystem()
+                },
+                {
+                    SystemTypes.MedBay,
+                    new MedScanSystem()
+                },
+                {
+                    SystemTypes.Reactor,
+                    new ReactorSystemType()
+                },
+                {
+                    SystemTypes.LifeSupp,
+                    new LifeSuppSystemType()
+                },
+                {
+                    SystemTypes.Security,
+                    new SecurityCameraSystemType()
+                },
+                {
+                    SystemTypes.Comms,
+                    new HudOverrideSystemType()
+                },
+                {
+                    SystemTypes.Doors,
+                    new DoorsSystemType()
+                },
+                    
+                {
+                    SystemTypes.Sabotage,
+                    new SabotageSystem()
+                    //(IActivatable) this.Systems[SystemTypes.Comms],
+                    //(IActivatable)this.Systems[SystemTypes.Reactor],
+                    //(IActivatable)this.Systems[SystemTypes.LifeSupp],
+                    //(IActivatable)this.Systems[SystemTypes.Electrical]
+                }
+            };
+
         public override void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
             if (onSpawn)
