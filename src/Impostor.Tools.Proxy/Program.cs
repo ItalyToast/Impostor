@@ -33,10 +33,10 @@ namespace Impostor.Tools.Proxy
         public static bool LogChat = false;
         public static bool SaveMessages = false;
 
-        public static bool BreakOnGameStart = true;
-        public static bool BreakOnGameEnd = true;
-        public static bool BreakOnMettingStart = true;
-        public static bool BreakOnMeetingEnd = true;
+        public static bool BreakOnGameStart = false;
+        public static bool BreakOnGameEnd = false;
+        public static bool BreakOnMettingStart = false;
+        public static bool BreakOnMeetingEnd = false;
 
 
         public static Dictionary<int, PlayerState> players = new Dictionary<int, PlayerState>();
@@ -214,8 +214,12 @@ namespace Impostor.Tools.Proxy
                 switch (messageType)
                 {
                     case MessageType.ReselectServer:
+                        var reselect = ReselectServer.Deserialize(reader);
+                        DumpToConsole(reselect);
                         break;
                     case MessageType.Redirect:
+                        var redirect = Redirect.Deserialize(reader);
+                        DumpToConsole(redirect);
                         break;
                     case MessageType.HostGame:
                         var host = HostGameResponse.Deserialize(reader);
@@ -262,10 +266,20 @@ namespace Impostor.Tools.Proxy
                     case MessageType.StartGame:
                         var start = StartGame.Deserialize(reader);
                         DumpToConsole(start);
+                        if (BreakOnGameStart)
+                        {
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
+                        }
                         break;
                     case MessageType.EndGame:
                         var end = EndGame.Deserialize(reader);
                         DumpToConsole(end);
+                        if (BreakOnGameEnd)
+                        {
+                            Console.WriteLine("Press any key to continue...");
+                            Console.ReadKey();
+                        }
                         break;
                     default:
                         Console.WriteLine($"Unhandled Message: {messageType} size: {body.Length}");
@@ -396,7 +410,6 @@ namespace Impostor.Tools.Proxy
                             var CheckName = CmdCheckName.Deserialize(reader);
                             DumpToConsole(CheckName, LogRPC);
                             break;
-
                         case RpcCalls.CloseDoorsOfType:
                             var CloseDoorsOfType = RpcCloseDoorsOfType.Deserialize(reader);
                             DumpToConsole(CloseDoorsOfType, LogRPC);
@@ -456,7 +469,7 @@ namespace Impostor.Tools.Proxy
                             break;
 
                         case RpcCalls.AddVote:
-                            var addvote = CmdCastVote.Deserialize(reader);
+                            var addvote = RpcAddVote.Deserialize(reader);
                             DumpToConsole(addvote, LogRPC);
                             break;
                         case RpcCalls.PlayAnimation:
@@ -502,13 +515,12 @@ namespace Impostor.Tools.Proxy
                             var startcounter = RpcSetStartCounter.Deserialize(reader);
                             DumpToConsole(startcounter, LogRPC);
                             break;
-                        //Dont have a message body
-                        case RpcCalls.Close:
-                        //Currently not implemented
-                        
                         case RpcCalls.SyncSettings:
                             var syncsettings = RpcSyncSettings.Deserialize(reader);
                             DumpToConsole(syncsettings, LogRPC);
+                            break;
+                        //Dont have a message body
+                        case RpcCalls.Close:
                             break;
 
                         //ComponentSpecific - it contains diffrent data depending on what component it's inteded for
@@ -538,7 +550,7 @@ namespace Impostor.Tools.Proxy
                     }
                     if (!(entity is CustomNetworkTransform))
                     {
-                        Console.WriteLine($"Recived Data for: {entity.GetType().Name} size: {data.data}");
+                        Console.WriteLine($"Recived Data for: {entity.GetType().Name} size: {data.data.Length}");
                     }
 
                     entity.Deserialize(new HazelBinaryReader(data.data), false);
@@ -555,10 +567,18 @@ namespace Impostor.Tools.Proxy
                     Console.WriteLine("Spawning: " + spawn.spawnId);
                     switch (spawn.spawnId)
                     {
+                        case 0:
+                            var shipStatus = new ShipStatus();
+                            shipStatus.OwnerId = spawn.ownerId;
+                            shipStatus.NetId = spawn.children[0].netId;
+                            shipStatus.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
+                            EntityTracker.Add(shipStatus);
+                            break;
                         case 1:
                             var meeting = new MeetingHud();
                             meeting.OwnerId = spawn.ownerId;
                             meeting.NetId = spawn.children[0].netId;
+                            meeting.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
                             EntityTracker.Add(meeting);
                             break;
                         case 2:
@@ -583,12 +603,10 @@ namespace Impostor.Tools.Proxy
                             break;
                         case 4://player character
                             var player = new PlayerControl();
-                            player.dummy0 = new DummyComponent();
-                            player.dummy0.name = "player.dummy0";
-                            player.dummy0.OwnerId = spawn.ownerId;
-                            player.dummy0.NetId = spawn.children[0].netId;
-                            player.dummy0.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
-                            EntityTracker.Add(player.dummy0);
+                            player.OwnerId = spawn.ownerId;
+                            player.NetId = spawn.children[0].netId;
+                            player.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
+                            EntityTracker.Add(player);
 
                             player.dummy1 = new DummyComponent();
                             player.dummy1.name = "player.dummy1";
