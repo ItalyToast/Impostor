@@ -1,4 +1,5 @@
 ﻿using Impostor.Shared.Innersloth.Enums;
+using Impostor.Shared.Innersloth.Systems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,47 +10,44 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
 {
     public class ShipStatus : InnerNetObject
     {
-        Dictionary<SystemTypes, object> systems = new Dictionary<SystemTypes, object>()
+        Dictionary<SystemTypes, ISystem> systems = new Dictionary<SystemTypes, ISystem>()
         {
-            this.Systems = new Dictionary<SystemTypes, ISystemType>(ShipStatus.SystemTypeComparer.Instance)
             {
-                {
-                    SystemTypes.Electrical,
-                    new SwitchSystem()
-                },
-                {
-                    SystemTypes.MedBay,
-                    new MedScanSystem()
-                },
-                {
-                    SystemTypes.Reactor,
-                    new ReactorSystemType()
-                },
-                {
-                    SystemTypes.LifeSupp,
-                    new LifeSuppSystemType()
-                },
-                {
-                    SystemTypes.Security,
-                    new SecurityCameraSystemType()
-                },
-                {
-                    SystemTypes.Comms,
-                    new HudOverrideSystemType()
-                },
-                {
-                    SystemTypes.Doors,
-                    new DoorsSystemType()
-                },
-                    
-                {
-                    SystemTypes.Sabotage,
-                    new SabotageSystem()
-                    //(IActivatable) this.Systems[SystemTypes.Comms],
-                    //(IActivatable)this.Systems[SystemTypes.Reactor],
-                    //(IActivatable)this.Systems[SystemTypes.LifeSupp],
-                    //(IActivatable)this.Systems[SystemTypes.Electrical]
-                }
+                SystemTypes.Electrical,
+                new SwitchSystem()
+            },
+            {
+                SystemTypes.MedBay,
+                new MedScanSystem()
+            },
+            {
+                SystemTypes.Reactor,
+                new ReactorSystem()
+            },
+            {
+                SystemTypes.LifeSupp,
+                new LifeSuppSystem()
+            },
+            {
+                SystemTypes.Security,
+                new SecurityCameraSystem()
+            },
+            {
+                SystemTypes.Comms,
+                new HudOverrideSystem()
+            },
+            {
+                SystemTypes.Doors,
+                new DoorsSystem()
+            },
+            {
+                SystemTypes.Sabotage,
+                new SabotageSystem()
+                //(IActivatable) this.Systems[SystemTypes.Comms],
+                //(IActivatable)this.Systems[SystemTypes.Reactor],
+                //(IActivatable)this.Systems[SystemTypes.LifeSupp],
+                //(IActivatable)this.Systems[SystemTypes.Electrical]
+            }
             };
 
         public override void Deserialize(HazelBinaryReader reader, bool onSpawn)
@@ -59,7 +57,15 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
                 for (int i = 0; i < 24; i++)
                 {
                     var system = (SystemTypes)i;
-                    DesializeSystem(system, reader);
+                    if (systems.ContainsKey(system))
+                    {
+                        var systemObj = systems[system];
+                        systemObj.Deserialize(reader, onSpawn);
+                    }
+                }
+                if (reader.HasBytesLeft())
+                {
+                    Console.WriteLine($"Bytesleft in ShipStatus DeserializeOnSpawn: size: {reader.GetBytesLeft()}");
                 }
                 return;
             }
@@ -70,67 +76,13 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
                 if ((systemFlags & (1 << i)) != 0)
                 {
                     var system = (SystemTypes)i;
-                    DesializeSystem(system, reader);
+                    var systemObj = systems[system];
+                    systemObj.Deserialize(reader, onSpawn);
                 }
             }
-        }
-
-        public void DesializeSystem(SystemTypes system, HazelBinaryReader reader)
-        {
-            switch (system)
+            if (reader.HasBytesLeft())
             {
-                case SystemTypes.Hallway:
-                    break;
-                case SystemTypes.Storage:
-                    break;
-                case SystemTypes.Cafeteria:
-                    break;
-                case SystemTypes.Reactor:
-                    break;
-                case SystemTypes.UpperEngine:
-                    break;
-                case SystemTypes.Nav:
-                    break;
-                case SystemTypes.Admin:
-                    break;
-                case SystemTypes.Electrical:
-                    break;
-                case SystemTypes.LifeSupp:
-                    break;
-                case SystemTypes.Shields:
-                    break;
-                case SystemTypes.MedBay:
-                    break;
-                case SystemTypes.Security:
-                    break;
-                case SystemTypes.Weapons:
-                    break;
-                case SystemTypes.LowerEngine:
-                    break;
-                case SystemTypes.Comms:
-                    break;
-                case SystemTypes.ShipTasks:
-                    break;
-                case SystemTypes.Doors:
-                    break;
-                case SystemTypes.Sabotage:
-                    break;
-                case SystemTypes.Decontamination:
-                    break;
-                case SystemTypes.Launchpad:
-                    break;
-                case SystemTypes.LockerRoom:
-                    break;
-                case SystemTypes.Laboratory:
-                    break;
-                case SystemTypes.Balcony:
-                    break;
-                case SystemTypes.Office:
-                    break;
-                case SystemTypes.Greenhouse:
-                    break;
-                default:
-                    throw new Exception("Unhandeled System: " + system);
+                Console.WriteLine($"Bytesleft in ShipStatus Deserialize: size: {reader.GetBytesLeft()}");
             }
         }
     }

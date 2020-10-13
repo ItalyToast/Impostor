@@ -6,17 +6,13 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.Systems
 {
-    public class SabotageSystem
+    public class SabotageSystem : ISystem
     {
         public float Timer;
 
-        public static SabotageSystem Deserialize(HazelBinaryReader reader, bool onSpawn)
+        public void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            var system = new SabotageSystem();
-
-            system.Timer = reader.ReadSingle();
-
-            return system;
+            Timer = reader.ReadSingle();
         }
     }
 }

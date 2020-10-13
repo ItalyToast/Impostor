@@ -6,40 +6,36 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.Systems
 {
-    public class DoorsSystem
-    {
+    public class DoorsSystem : ISystem
+	{
 		public class Doorway
         {
 			public bool isOpen;
         }
 
-        private List<Doorway> doors;
+        private List<Doorway> doors = new List<Doorway>();
 
-        public static DoorsSystem Deserialize(HazelBinaryReader reader, bool onSpawn)
+        public void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            var system = new DoorsSystem();
-
 			if (onSpawn)
 			{
 				for (int i = 0; i < 10; i++)
 				{
-					system.doors.Add(new Doorway()
+					doors.Add(new Doorway()
 					{
 						isOpen = reader.ReadBoolean(),
 					});
 				}
-				return system;
+				return;
 			}
 			uint doorFlags = reader.ReadPackedUInt32();
-			for (int j = 0; j < system.doors.Count; j++)
+			for (int j = 0; j < doors.Count; j++)
 			{
 				if ((doorFlags & (1U << j)) != 0U)
 				{
-					system.doors[j].isOpen = reader.ReadBoolean();
+					doors[j].isOpen = reader.ReadBoolean();
 				}
 			}
-
-			return system;
         }
     }
 }

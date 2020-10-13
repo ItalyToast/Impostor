@@ -6,17 +6,13 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.Systems
 {
-    public class SecurityCameraSystem
+    public class SecurityCameraSystem : ISystem
     {
-        public byte InUse;
+        public List<byte> InUseBy;
 
-        public static SecurityCameraSystem Deserialize(HazelBinaryReader reader, bool onSpawn)
+        public void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            var system = new SecurityCameraSystem();
-
-            system.InUse = reader.ReadByte();
-
-            return system;
+            InUseBy = reader.ReadList(read => read.ReadByte());
         }
     }
 }

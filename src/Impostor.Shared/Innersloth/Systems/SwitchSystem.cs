@@ -6,21 +6,17 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.Systems
 {
-    public class SwitchSystem
+    public class SwitchSystem : ISystem
     {
         public byte ExpectedSwitches;
         public byte ActualSwitches;
         public byte Value;
 
-        public static SwitchSystem Deserialize(HazelBinaryReader reader, bool onSpawn)
+        public void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            var system = new SwitchSystem();
-
-            system.ExpectedSwitches = reader.ReadByte();
-            system.ActualSwitches = reader.ReadByte();
-            system.Value = reader.ReadByte();
-
-            return system;
+            ExpectedSwitches = reader.ReadByte();
+            ActualSwitches = reader.ReadByte();
+            Value = reader.ReadByte();
         }
     }
 }

@@ -6,24 +6,15 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.Systems
 {
-    public class ReactorSystem
+    public class ReactorSystem : ISystem
     {
         public float Countdown;
-        public List<Tuple<byte, byte>> UserConsolePairs;
+        public List<Tuple<byte, byte>> UserConsolePairs = new List<Tuple<byte, byte>>();
 
-        public static ReactorSystem Deserialize(HazelBinaryReader reader, bool onSpawn)
+        public void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            var system = new ReactorSystem();
-
-            system.Countdown = reader.ReadSingle();
-            system.UserConsolePairs.Clear();
-            int num = reader.ReadPackedInt32();
-            for (int i = 0; i < num; i++)
-            {
-                system.UserConsolePairs.Add(new Tuple<byte, byte>(reader.ReadByte(), reader.ReadByte()));
-            }
-
-            return system;
+            Countdown = reader.ReadSingle();
+            UserConsolePairs = reader.ReadList(read => new Tuple<byte, byte>(reader.ReadByte(), reader.ReadByte()));
         }
     }
 }

@@ -6,17 +6,13 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.Systems
 {
-    public class HudOverrideSystem
+    public class HudOverrideSystem : ISystem
     {
         public bool IsActive;
 
-        public static HudOverrideSystem Deserialize(HazelBinaryReader reader, bool onSpawn)
+        public void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            var system = new HudOverrideSystem();
-
-            system.IsActive = reader.ReadBoolean();
-
-            return system;
+            IsActive = reader.ReadBoolean();
         }
     }
 }

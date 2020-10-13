@@ -6,19 +6,15 @@ using System.Threading.Tasks;
 
 namespace Impostor.Shared.Innersloth.Systems
 {
-    public class DeconSystem
+    public class DeconSystem : ISystem
     {
         public float timer;
         public States curState;
 
-        public static DeconSystem Deserialize(HazelBinaryReader reader, bool onSpawn)
+        public void Deserialize(HazelBinaryReader reader, bool onSpawn)
         {
-            var system = new DeconSystem();
-
-            system.timer = (float)reader.ReadByte();
-            system.curState = (States)reader.ReadByte();
-
-            return system;
+            timer = (float)reader.ReadByte();
+            curState = (States)reader.ReadByte();
         }
 
         public enum States
