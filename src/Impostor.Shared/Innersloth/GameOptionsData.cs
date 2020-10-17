@@ -9,7 +9,7 @@ namespace Impostor.Shared.Innersloth
         public byte Version { get; set; }
         public byte MaxPlayers { get; set; }
         public GameKeywords Keywords { get; set; }
-        public byte MapId { get; set; }
+        public Map MapId { get; set; }
         public float PlayerSpeedMod { get; set; }
         public float CrewLightMod { get; set; }
         public float ImpostorLightMod { get; set; }
@@ -74,7 +74,7 @@ namespace Impostor.Shared.Innersloth
             result.Version = reader.ReadByte();
             result.MaxPlayers = reader.ReadByte();
             result.Keywords = (GameKeywords)reader.ReadUInt32();
-            result.MapId = reader.ReadByte();
+            result.MapId = (Map)reader.ReadByte();
             result.PlayerSpeedMod = reader.ReadSingle();
             result.CrewLightMod = reader.ReadSingle();
             result.ImpostorLightMod = reader.ReadSingle();

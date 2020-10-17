@@ -14,6 +14,7 @@ namespace Impostor.Shared.Innersloth.Messages
         public int hostId;
         public DisconnectReason reason;
         public byte unknown;
+        public byte unknown2;
         public static RemovePlayerResponse Deserialize(HazelBinaryReader reader)
         {
             var msg = new RemovePlayerResponse();
@@ -22,6 +23,7 @@ namespace Impostor.Shared.Innersloth.Messages
             msg.hostId = reader.ReadInt32();
             msg.reason = (DisconnectReason)reader.ReadByte();
             msg.unknown = reader.ReadByte();
+            msg.unknown2 = reader.ReadByte();
             return msg;
         }
     }

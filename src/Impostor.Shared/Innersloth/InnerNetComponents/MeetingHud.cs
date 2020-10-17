@@ -29,12 +29,15 @@ namespace Impostor.Shared.Innersloth.InnerNetComponents
 			if (onSpawn)
 			{
 				Console.WriteLine("Meetinghud spawn");
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 10; i++)//need to fix this here, packet only contains the amount of players in the server
                 {
-					playerStates.Add(new PlayerVoteArea()
-					{
-						value = (PlayerVoteAreaFlags)reader.ReadByte(),
-					});
+                    while (reader.HasBytesLeft())
+                    {
+						playerStates.Add(new PlayerVoteArea()
+						{
+							value = (PlayerVoteAreaFlags)reader.ReadByte(),
+						});
+					}
                 }
 				return;
 			}

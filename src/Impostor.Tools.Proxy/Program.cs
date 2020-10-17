@@ -31,7 +31,9 @@ namespace Impostor.Tools.Proxy
         public static bool LogMoves = false;
         public static bool LogRPC = false;
         public static bool LogChat = false;
+        public static bool LoadMessages = true;
         public static bool SaveMessages = false;
+        public static string MessageFolder = "all";
 
         public static bool BreakOnGameStart = false;
         public static bool BreakOnGameEnd = false;
@@ -43,7 +45,7 @@ namespace Impostor.Tools.Proxy
 
         private static void Main(string[] args)
         {
-            Directory.CreateDirectory("all");
+            Directory.CreateDirectory(MessageFolder);
             //foreach (var f in Directory.EnumerateFiles("spawn"))
             //{
             //    var fi = new FileInfo(f);
@@ -76,28 +78,29 @@ namespace Impostor.Tools.Proxy
             //    }
             //}
 
-            Regex idregex = new Regex("_(\\d+)_(\\d+)");
-            foreach (var f in Directory.EnumerateFiles("all").OrderBy(p => int.Parse(idregex.Match(p).Groups[2].Value)))
+            if (LoadMessages)
             {
-                var fi = new FileInfo(f);
-                var send = fi.Name.Contains("send");
-
-                var body = File.ReadAllBytes(f);
-                var reader = MessageReader.Get(body);
-                reader.Tag = byte.Parse(idregex.Match(fi.Name).Groups[1].Value);
-
-                if (send)
+                Regex idregex = new Regex("_(\\d+)_(\\d+)");
+                foreach (var f in Directory.EnumerateFiles(MessageFolder).OrderBy(p => int.Parse(idregex.Match(p).Groups[2].Value)))
                 {
-                    HandleToServer("file", reader);
-                }
-                else
-                {
-                    HandleToClient("file", reader);
+                    var fi = new FileInfo(f);
+                    var send = fi.Name.Contains("send");
+
+                    var body = File.ReadAllBytes(f);
+                    var reader = MessageReader.Get(body);
+                    reader.Tag = byte.Parse(idregex.Match(fi.Name).Groups[1].Value);
+
+                    if (send)
+                    {
+                        HandleToServer("file", reader);
+                    }
+                    else
+                    {
+                        HandleToClient("file", reader);
+                    }
                 }
             }
-
-
-
+            
             var devices = LivePacketDevice.AllLocalMachine;
             if (devices.Count == 0)
             {
@@ -179,6 +182,8 @@ namespace Impostor.Tools.Proxy
             if (header == (byte)UdpSendOption.Hello )
             {
                 Console.WriteLine("Recived Hello");
+                var hello = HelloHandshake.Deserialize(reader);
+                DumpToConsole(hello);
                 return buffers;
             }
             if (header == (byte)SendOption.Reliable)
@@ -208,7 +213,7 @@ namespace Impostor.Tools.Proxy
                 var body = reader.PeekToEnd();
                 if (SaveMessages)
                 {
-                    File.WriteAllBytes(Path.Combine("all", $"recv_{packet.Tag}_{allId++}.bin"), body);
+                    File.WriteAllBytes(Path.Combine(MessageFolder, $"recv_{packet.Tag}_{allId++}.bin"), body);
                 }
                 
                 switch (messageType)
@@ -280,6 +285,9 @@ namespace Impostor.Tools.Proxy
                             Console.WriteLine("Press any key to continue...");
                             Console.ReadKey();
                         }
+
+                        //Clear Entities to prevent collisions
+                        EntityTracker.entities.Clear();
                         break;
                     default:
                         Console.WriteLine($"Unhandled Message: {messageType} size: {body.Length}");
@@ -309,7 +317,7 @@ namespace Impostor.Tools.Proxy
                 var body = reader.PeekToEnd();
                 if (SaveMessages)
                 {
-                    File.WriteAllBytes(Path.Combine("all", $"send_{packet.Tag}_{allId++}.bin"), body);
+                    File.WriteAllBytes(Path.Combine(MessageFolder, $"send_{packet.Tag}_{allId++}.bin"), body);
                 }
                 
                 switch (messageType)
@@ -588,11 +596,11 @@ namespace Impostor.Tools.Proxy
                             EntityTracker.Add(lobby);
                             break;
                         case 3:
-                            var dummy = new GameDataComponent();
-                            dummy.OwnerId = spawn.ownerId;
-                            dummy.NetId = spawn.children[0].netId;
-                            dummy.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
-                            EntityTracker.Add(dummy);
+                            var gdc = new GameDataComponent();
+                            gdc.OwnerId = spawn.ownerId;
+                            gdc.NetId = spawn.children[0].netId;
+                            gdc.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
+                            EntityTracker.Add(gdc);
 
                             var dummy2 = new DummyComponent();
                             dummy2.name = "gamedata.dummy1";
