@@ -23,7 +23,7 @@ namespace Impostor.Shared.Innersloth.Messages
             msg.hostId = reader.ReadInt32();
             msg.reason = (DisconnectReason)reader.ReadByte();
             msg.unknown = reader.ReadByte();
-            msg.unknown2 = reader.ReadByte();
+            //msg.unknown2 = reader.ReadByte();
             return msg;
         }
     }

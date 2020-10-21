@@ -19,7 +19,11 @@ namespace Impostor.Shared.Innersloth.Systems
         {
 			if (onSpawn)
 			{
-				for (int i = 0; i < 10; i++)
+				//This number of doors depends on the map
+				//Skeld: 13
+				//HQ: 2?
+				//Polus: 12
+				for (int i = 0; i < 12; i++)
 				{
 					doors.Add(new Doorway()
 					{

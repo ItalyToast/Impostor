@@ -33,7 +33,7 @@ namespace Impostor.Tools.Proxy
         public static bool LogChat = false;
         public static bool LoadMessages = true;
         public static bool SaveMessages = false;
-        public static string MessageFolder = "all";
+        public static string MessageFolder = "hq";
 
         public static bool BreakOnGameStart = false;
         public static bool BreakOnGameEnd = false;
@@ -631,7 +631,19 @@ namespace Impostor.Tools.Proxy
                             DumpToConsole(player);
                             break;
                         case 5://HeadQuarters
+                            var hq = new ShipStatus();
+                            hq.OwnerId = spawn.ownerId;
+                            hq.NetId = spawn.children[0].netId;
+                            hq.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
+                            EntityTracker.Add(hq);
+                            break;
                         case 6://PlanetMap
+                            var polus = new ShipStatus();
+                            polus.OwnerId = spawn.ownerId;
+                            polus.NetId = spawn.children[0].netId;
+                            polus.Deserialize(new HazelBinaryReader(spawn.children[0].body), true);
+                            EntityTracker.Add(polus);
+                            break;
                         case 7://AprilShipStatus
                         default:
                             Console.WriteLine($"Unhandled spawnid: {spawn.spawnId}");
